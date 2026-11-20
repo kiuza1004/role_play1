@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Lineage Classic Mobile - 리니지 1 클래식 (말하는 섬)</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- 상단 글로벌 바 -->
+    <header id="lineage-header">
+        <div class="logo-text">
+            <span>⚔ LINEAGE CLASSIC</span>
+            <span class="sub">[말하는 섬]</span>
+        </div>
+        <div class="header-btns">
+            <button class="btn-header" id="btn-sound-toggle">🔊 BGM ON</button>
+            <button class="btn-header" onclick="window.lineageEngine.toggleInventory()">가방(I)</button>
+            <button class="btn-header" onclick="window.lineageEngine.toggleStats()">정보(C)</button>
+        </div>
+    </header>
+
+    <!-- 메인 게임 화면 -->
+    <main id="game-container">
+        <!-- 리니지 필드 캔버스 (모바일 터치 이동 & 공격) -->
+        <canvas id="lineageCanvas" width="1024" height="520"></canvas>
+
+        <!-- 리니지 특유의 하단 메탈 인터페이스 바 -->
+        <footer id="lineage-hud">
+            <!-- 1. 좌측 채팅/전투 로그 콘솔 -->
+            <section class="chat-log-box">
+                <div class="chat-tab-header">
+                    <span class="active">전체 / 전투로그</span>
+                </div>
+                <div class="chat-log-content" id="chat-log-content"></div>
+            </section>
+
+            <!-- 2. 중앙 HP/MP 게이지 & F1~F8 퀵슬롯 -->
+            <section class="hud-center">
+                <!-- HP/MP 바 -->
+                <div class="gauges-container">
+                    <div class="gauge-row">
+                        <span class="gauge-label" style="color: #ef4444;">HP</span>
+                        <div class="gauge-track">
+                            <div class="gauge-fill hp-fill" id="hp-gauge-fill" style="width: 100%;"></div>
+                            <span class="gauge-text" id="hp-gauge-text">120 / 120</span>
+                        </div>
+                    </div>
+                    <div class="gauge-row">
+                        <span class="gauge-label" style="color: #3b82f6;">MP</span>
+                        <div class="gauge-track">
+                            <div class="gauge-fill mp-fill" id="mp-gauge-fill" style="width: 100%;"></div>
+                            <span class="gauge-text" id="mp-gauge-text">50 / 50</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- F1 ~ F8 단축 슬롯창 (터치 즉시 사용 지원) -->
+                <div class="quickslot-bar">
+                    <div class="slot-item" data-item="red_potion">
+                        <span class="slot-key">F1</span>
+                        <span class="slot-name">빨간물약</span>
+                        <span class="slot-count" id="slot-count-1">30</span>
+                    </div>
+                    <div class="slot-item" data-item="green_potion">
+                        <span class="slot-key">F2</span>
+                        <span class="slot-name">초록이</span>
+                        <span class="slot-count" id="slot-count-2">10</span>
+                    </div>
+                    <div class="slot-item" data-item="brave_potion">
+                        <span class="slot-key">F3</span>
+                        <span class="slot-name">용기의물약</span>
+                        <span class="slot-count" id="slot-count-3">6</span>
+                    </div>
+                    <div class="slot-item" data-item="teleport">
+                        <span class="slot-key">F4</span>
+                        <span class="slot-name">순간이동</span>
+                        <span class="slot-count" id="slot-count-4">15</span>
+                    </div>
+                    <div class="slot-item" data-item="return">
+                        <span class="slot-key">F5</span>
+                        <span class="slot-name">귀환</span>
+                        <span class="slot-count" id="slot-count-5">5</span>
+                    </div>
+                    <div class="slot-item" data-item="enchant_weapon">
+                        <span class="slot-key">F6</span>
+                        <span class="slot-name">데이(강화)</span>
+                        <span class="slot-count" id="slot-count-6">5</span>
+                    </div>
+                    <div class="slot-item" data-item="polymorph">
+                        <span class="slot-key">F7</span>
+                        <span class="slot-name">데스변신</span>
+                        <span class="slot-count" id="slot-count-7">4</span>
+                    </div>
+                    <div class="slot-item" data-item="energy_bolt">
+                        <span class="slot-key">F8</span>
+                        <span class="slot-name">에너지볼트</span>
+                        <span class="slot-count" id="slot-count-8">∞</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. 우측 상태 & 장비 패널 -->
+            <section class="hud-right">
+                <div class="equipment-info">
+                    <div class="info-row">
+                        <span>착용 무기</span>
+                        <span class="info-val" id="hud-weapon-text">+0 싸울아비 장검</span>
+                    </div>
+                    <div class="info-row">
+                        <span>소지 아데나</span>
+                        <span class="info-val gold" id="hud-adena-text">3,000 아데나</span>
+                    </div>
+                    <div class="info-row">
+                        <span>경험치</span>
+                        <span class="info-val" id="exp-gauge-text" style="color:#34d399;">EXP 0.00%</span>
+                    </div>
+                </div>
+
+                <div class="menu-buttons">
+                    <button class="btn-hud" onclick="window.lineageEngine.toggleInventory()">소지품(I)</button>
+                    <button class="btn-hud" onclick="window.lineageEngine.toggleStats()">정보(C)</button>
+                    <button class="btn-hud" onclick="window.lineageEngine.openShopModal()">판도라 상점</button>
+                    <button class="btn-hud" onclick="window.lineageEngine.attemptEnchantWeapon()">무기 인챈트</button>
+                </div>
+            </section>
+
+            <!-- 최하단 EXP 경험치 바 -->
+            <div class="exp-bar-strip">
+                <div class="exp-bar-fill" id="exp-gauge-fill"></div>
+            </div>
+        </footer>
+
+        <!-- 팝업 모달 1: 인벤토리 가방 -->
+        <div class="lineage-modal" id="inventory-modal">
+            <div class="modal-header">
+                <span>소지품 (인벤토리)</span>
+                <span class="modal-close-btn" onclick="window.lineageEngine.toggleInventory()">✕</span>
+            </div>
+            <div class="modal-body">
+                <div class="inv-grid" id="inv-item-list"></div>
+            </div>
+        </div>
+
+        <!-- 팝업 모달 2: 캐릭터 상태창 -->
+        <div class="lineage-modal" id="stats-modal">
+            <div class="modal-header">
+                <span>캐릭터 정보 (Status)</span>
+                <span class="modal-close-btn" onclick="window.lineageEngine.toggleStats()">✕</span>
+            </div>
+            <div class="modal-body" id="stats-content"></div>
+        </div>
+
+        <!-- 팝업 모달 3: 판도라 물약 상점 -->
+        <div class="lineage-modal" id="shop-modal">
+            <div class="modal-header">
+                <span>판도라의 물약 상점</span>
+                <span class="modal-close-btn" onclick="document.getElementById('shop-modal').style.display='none'">✕</span>
+            </div>
+            <div class="modal-body">
+                <div class="shop-item-row">
+                    <div><b>빨간 물약 (10개)</b> - 200 아데나</div>
+                    <button class="btn-buy" onclick="buyShopItem('red_potion', 10, 200)">구매</button>
+                </div>
+                <div class="shop-item-row">
+                    <div><b>초록 물약 (5개)</b> - 300 아데나</div>
+                    <button class="btn-buy" onclick="buyShopItem('green_potion', 5, 300)">구매</button>
+                </div>
+                <div class="shop-item-row">
+                    <div><b>용기의 물약 (3개)</b> - 500 아데나</div>
+                    <button class="btn-buy" onclick="buyShopItem('brave_potion', 3, 500)">구매</button>
+                </div>
+                <div class="shop-item-row">
+                    <div><b>무기 마법 주문서 (데이 1장)</b> - 1,500 아데나</div>
+                    <button class="btn-buy" onclick="buyShopItem('enchant_weapon', 1, 1500)">구매</button>
+                </div>
+                <div class="shop-item-row">
+                    <div><b>변신 주문서 (데스나이트 2장)</b> - 1,000 아데나</div>
+                    <button class="btn-buy" onclick="buyShopItem('polymorph', 2, 1000)">구매</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 스크립트 모듈 로드 -->
+    <script src="js/audio.js"></script>
+    <script src="js/lineageSprites.js"></script>
+    <script src="js/lineage.js"></script>
+    <script>
+        function buyShopItem(id, count, cost) {
+            const p = window.lineageEngine.player;
+            if (p.adena >= cost) {
+                p.adena -= cost;
+                const item = window.lineageEngine.getItem(id);
+                if (item) item.count += count;
+                window.lineageAudio.playCoin();
+                window.lineageEngine.addLog("시스템", `[상점] ${item.name} ${count}개를 구매했습니다. (-${cost} 아데나)`);
+                window.lineageEngine.updateHUD();
+            } else {
+                window.lineageEngine.addLog("시스템", "아데나가 부족합니다!");
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('lineageCanvas');
+            window.lineageEngine = new LineageEngine(canvas);
+            window.lineageEngine.start();
+
+            // 퀵슬롯 모바일 터치 및 클릭 바인딩
+            document.querySelectorAll('.slot-item').forEach(slot => {
+                const itemId = slot.getAttribute('data-item');
+                const triggerAction = (e) => {
+                    e.preventDefault();
+                    if (window.lineageEngine) window.lineageEngine.useItem(itemId);
+                };
+                slot.addEventListener('click', triggerAction);
+                slot.addEventListener('touchstart', triggerAction, { passive: false });
+            });
+
+            // 사운드 토글
+            const btnSound = document.getElementById('btn-sound-toggle');
+            btnSound.addEventListener('click', () => {
+                const muted = window.lineageAudio.toggleMute();
+                btnSound.textContent = muted ? '🔇 BGM OFF' : '🔊 BGM ON';
+            });
+        });
+    </script>
+</body>
+</html>
