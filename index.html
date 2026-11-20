@@ -5,19 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
-    <title>Lineage Classic Mobile - 리니지 1 클래식 (말하는 섬)</title>
+    <title>Lineage Classic Mobile v1.2.0 - 리니지 1 클래식</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
-    <!-- 상단 글로벌 바 -->
+    <!-- 상단 글로벌 바 (버전 표기 & 메뉴) -->
     <header id="lineage-header">
         <div class="logo-text">
             <span>⚔ LINEAGE CLASSIC</span>
-            <span class="sub">[말하는 섬]</span>
+            <span class="version-badge" id="version-display" onclick="openGuideModal()">v1.2.0</span>
         </div>
         <div class="header-btns">
-            <button class="btn-header" id="btn-sound-toggle">🔊 BGM ON</button>
+            <button class="btn-header" id="btn-sound-toggle">🔊 BGM</button>
+            <button class="btn-header" onclick="openSettingsModal()">⚙ 설정</button>
+            <button class="btn-header" onclick="openGuideModal()">📖 설명서</button>
             <button class="btn-header" onclick="window.lineageEngine.toggleInventory()">가방(I)</button>
             <button class="btn-header" onclick="window.lineageEngine.toggleStats()">정보(C)</button>
         </div>
@@ -28,7 +30,7 @@
         <!-- 리니지 필드 캔버스 (모바일 터치 이동 & 공격) -->
         <canvas id="lineageCanvas" width="1024" height="520"></canvas>
 
-        <!-- 리니지 특유의 하단 메탈 인터페이스 바 -->
+        <!-- 리니지 특유의 하단/우측 메탈 인터페이스 바 -->
         <footer id="lineage-hud">
             <!-- 1. 좌측 채팅/전투 로그 콘솔 -->
             <section class="chat-log-box">
@@ -58,42 +60,42 @@
                     </div>
                 </div>
 
-                <!-- F1 ~ F8 단축 슬롯창 (터치 즉시 사용 지원) -->
+                <!-- F1 ~ F8 단축 슬롯창 -->
                 <div class="quickslot-bar">
                     <div class="slot-item" data-item="red_potion">
                         <span class="slot-key">F1</span>
                         <span class="slot-name">빨간물약</span>
-                        <span class="slot-count" id="slot-count-1">30</span>
+                        <span class="slot-count" id="slot-count-1">35</span>
                     </div>
                     <div class="slot-item" data-item="green_potion">
                         <span class="slot-key">F2</span>
                         <span class="slot-name">초록이</span>
-                        <span class="slot-count" id="slot-count-2">10</span>
+                        <span class="slot-count" id="slot-count-2">12</span>
                     </div>
                     <div class="slot-item" data-item="brave_potion">
                         <span class="slot-key">F3</span>
                         <span class="slot-name">용기의물약</span>
-                        <span class="slot-count" id="slot-count-3">6</span>
+                        <span class="slot-count" id="slot-count-3">8</span>
                     </div>
                     <div class="slot-item" data-item="teleport">
                         <span class="slot-key">F4</span>
                         <span class="slot-name">순간이동</span>
-                        <span class="slot-count" id="slot-count-4">15</span>
+                        <span class="slot-count" id="slot-count-4">20</span>
                     </div>
                     <div class="slot-item" data-item="return">
                         <span class="slot-key">F5</span>
                         <span class="slot-name">귀환</span>
-                        <span class="slot-count" id="slot-count-5">5</span>
+                        <span class="slot-count" id="slot-count-5">6</span>
                     </div>
                     <div class="slot-item" data-item="enchant_weapon">
                         <span class="slot-key">F6</span>
                         <span class="slot-name">데이(강화)</span>
-                        <span class="slot-count" id="slot-count-6">5</span>
+                        <span class="slot-count" id="slot-count-6">6</span>
                     </div>
                     <div class="slot-item" data-item="polymorph">
                         <span class="slot-key">F7</span>
                         <span class="slot-name">데스변신</span>
-                        <span class="slot-count" id="slot-count-7">4</span>
+                        <span class="slot-count" id="slot-count-7">5</span>
                     </div>
                     <div class="slot-item" data-item="energy_bolt">
                         <span class="slot-key">F8</span>
@@ -134,7 +136,77 @@
             </div>
         </footer>
 
-        <!-- 팝업 모달 1: 인벤토리 가방 -->
+        <!-- 모달 1: 설정창 (속도 & 난이도 조절) -->
+        <div class="lineage-modal" id="settings-modal">
+            <div class="modal-header">
+                <span>게임 설정 (속도 & 난이도)</span>
+                <span class="modal-close-btn" onclick="closeSettingsModal()">✕</span>
+            </div>
+            <div class="modal-body">
+                <div class="setting-group">
+                    <span class="setting-label">▶ 게임 배속 조절</span>
+                    <div class="btn-group">
+                        <button class="btn-opt active" id="spd-10" onclick="changeSpeed(1.0)">1.0x (표준)</button>
+                        <button class="btn-opt" id="spd-15" onclick="changeSpeed(1.5)">1.5x (빠름)</button>
+                        <button class="btn-opt" id="spd-20" onclick="changeSpeed(2.0)">2.0x (초고속)</button>
+                    </div>
+                </div>
+                <div class="setting-group">
+                    <span class="setting-label">▶ 게임 난이도 조절</span>
+                    <div class="btn-group">
+                        <button class="btn-opt" id="diff-easy" onclick="changeDifficulty('easy')">쉬움 (초보)</button>
+                        <button class="btn-opt active" id="diff-normal" onclick="changeDifficulty('normal')">보통 (클래식)</button>
+                        <button class="btn-opt" id="diff-hard" onclick="changeDifficulty('hard')">어려움 (하드)</button>
+                    </div>
+                </div>
+                <div style="font-size:0.75rem; color:#94a3b8; line-height:1.4;">
+                    * <b>쉬움</b>: 몬스터 공격력 40% 감소, 물약 회복량 및 획득 경험치 대폭 증가, 인챈트 확률 80%<br>
+                    * <b>보통</b>: 원작 리니지 클래식 표준 밸런스 (인챈트 확률 65%)<br>
+                    * <b>어려움</b>: 몬스터 공격력 45% 및 체력 35% 증가 (인챈트 확률 50%)
+                </div>
+            </div>
+        </div>
+
+        <!-- 모달 2: 상세 게임 설명서 -->
+        <div class="lineage-modal" id="guide-modal">
+            <div class="modal-header">
+                <span>리니지 클래식 모바일 완전 공략 설명서</span>
+                <span class="modal-close-btn" onclick="closeGuideModal()">✕</span>
+            </div>
+            <div class="modal-body">
+                <div class="guide-sec">
+                    <h4>1. 조작법 (모바일 & PC)</h4>
+                    <ul>
+                        <li><b>이동</b>: 화면 빈 땅 터치 또는 마우스 좌클릭</li>
+                        <li><b>공격</b>: 몬스터 또는 허수아비 터치/클릭 시 접근하여 자동 지속 칼질</li>
+                        <li><b>물약 복용</b>: 하단 F1(빨간물약) 터치 또는 마우스 우클릭 시 즉시 HP 회복</li>
+                        <li><b>가속</b>: F2(초록이 1단 가속), F3(용기의 물약 2단 가속) 복용 시 칼질 폭풍 가속</li>
+                    </ul>
+                </div>
+                <div class="guide-sec">
+                    <h4>2. 초보자 육성 및 사냥터</h4>
+                    <ul>
+                        <li><b>안전지대(마을)</b>: 좌측 수련장에서 허수아비를 쳐서 레벨 5까지 기초 훈련 가능 (HP/MP 자연 회복 2배)</li>
+                        <li><b>전투구역(필드)</b>: 우측 야생으로 나가 가네프 오크, 라이칸스로프, 셀로브를 사냥하여 대량의 아데나와 주문서 획득</li>
+                    </ul>
+                </div>
+                <div class="guide-sec">
+                    <h4>3. 무기 인챈트(데이) 시스템</h4>
+                    <ul>
+                        <li><b>+0 ~ +5</b>: 100% 안전 인챈트 성공 (공격력 단계별 증가)</li>
+                        <li><b>+6 이상</b>: 확률 인챈트 (성공 시 신화적 대미지, 실패 시 무기 증발 파괴)</li>
+                    </ul>
+                </div>
+                <div class="guide-sec">
+                    <h4>4. 52레벨 전설의 데스나이트 변신</h4>
+                    <ul>
+                        <li>단축창 <b>F7 변신 주문서</b>를 터치하면 타오르는 불꽃검을 든 데스나이트로 변신하며 압도적인 공격속도로 몬스터를 학살합니다.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 모달 3: 인벤토리 가방 -->
         <div class="lineage-modal" id="inventory-modal">
             <div class="modal-header">
                 <span>소지품 (인벤토리)</span>
@@ -145,7 +217,7 @@
             </div>
         </div>
 
-        <!-- 팝업 모달 2: 캐릭터 상태창 -->
+        <!-- 모달 4: 캐릭터 상태창 -->
         <div class="lineage-modal" id="stats-modal">
             <div class="modal-header">
                 <span>캐릭터 정보 (Status)</span>
@@ -154,7 +226,7 @@
             <div class="modal-body" id="stats-content"></div>
         </div>
 
-        <!-- 팝업 모달 3: 판도라 물약 상점 -->
+        <!-- 모달 5: 판도라 물약 상점 -->
         <div class="lineage-modal" id="shop-modal">
             <div class="modal-header">
                 <span>판도라의 물약 상점</span>
@@ -190,6 +262,36 @@
     <script src="js/lineageSprites.js"></script>
     <script src="js/lineage.js"></script>
     <script>
+        function openSettingsModal() {
+            document.getElementById('settings-modal').style.display = 'flex';
+        }
+        function closeSettingsModal() {
+            document.getElementById('settings-modal').style.display = 'none';
+        }
+        function openGuideModal() {
+            document.getElementById('guide-modal').style.display = 'flex';
+        }
+        function closeGuideModal() {
+            document.getElementById('guide-modal').style.display = 'none';
+        }
+
+        function changeSpeed(spd) {
+            ['spd-10', 'spd-15', 'spd-20'].forEach(id => document.getElementById(id).classList.remove('active'));
+            if (spd === 1.0) document.getElementById('spd-10').classList.add('active');
+            if (spd === 1.5) document.getElementById('spd-15').classList.add('active');
+            if (spd === 2.0) document.getElementById('spd-20').classList.add('active');
+            if (window.lineageEngine) window.lineageEngine.setSpeed(spd);
+        }
+
+        function changeDifficulty(diff) {
+            ['diff-easy', 'diff-normal', 'diff-hard'].forEach(id => document.getElementById(id).classList.remove('active'));
+            document.getElementById(`diff-${diff}`).classList.add('active');
+            if (window.lineageEngine) {
+                window.lineageEngine.setDifficulty(diff);
+                window.lineageEngine.spawnMonsters();
+            }
+        }
+
         function buyShopItem(id, count, cost) {
             const p = window.lineageEngine.player;
             if (p.adena >= cost) {
@@ -209,7 +311,6 @@
             window.lineageEngine = new LineageEngine(canvas);
             window.lineageEngine.start();
 
-            // 퀵슬롯 모바일 터치 및 클릭 바인딩
             document.querySelectorAll('.slot-item').forEach(slot => {
                 const itemId = slot.getAttribute('data-item');
                 const triggerAction = (e) => {
@@ -220,11 +321,10 @@
                 slot.addEventListener('touchstart', triggerAction, { passive: false });
             });
 
-            // 사운드 토글
             const btnSound = document.getElementById('btn-sound-toggle');
             btnSound.addEventListener('click', () => {
                 const muted = window.lineageAudio.toggleMute();
-                btnSound.textContent = muted ? '🔇 BGM OFF' : '🔊 BGM ON';
+                btnSound.textContent = muted ? '🔇 BGM' : '🔊 BGM';
             });
         });
     </script>

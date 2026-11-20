@@ -1,6 +1,6 @@
 /**
- * LineageEngine - 리니지 1 클래식 코어 게임 엔진 (모바일 터치 & 반응형 지원)
- * 마우스 포인트&클릭 및 모바일 스마트폰 터치 이동/공격 완벽 지원
+ * LineageEngine - 리니지 1 클래식 코어 게임 엔진 (v1.2.0)
+ * 배속 조절(1.0x, 1.5x, 2.0x), 난이도 조절(쉬움, 보통, 어려움), 모바일 터치 및 가로모드 화면 맞춤 완벽 지원
  */
 class LineageEngine {
     constructor(canvas) {
@@ -9,11 +9,25 @@ class LineageEngine {
         this.isRunning = false;
         this.animationId = null;
 
+        // 게임 설정 (속도 & 난이도)
+        this.speedMultiplier = 1.0; // 1.0, 1.5, 2.0
+        this.difficulty = 'normal';   // 'easy', 'normal', 'hard'
+
         this.init();
     }
 
+    setSpeed(speed) {
+        this.speedMultiplier = parseFloat(speed);
+        this.addLog("설정", `게임 속도가 [${this.speedMultiplier}배속]으로 변경되었습니다.`);
+    }
+
+    setDifficulty(diff) {
+        this.difficulty = diff;
+        const names = { 'easy': '쉬움 (초보자)', 'normal': '보통 (클래식)', 'hard': '어려움 (하드코어)' };
+        this.addLog("설정", `게임 난이도가 [${names[diff]}]으로 설정되었습니다.`);
+    }
+
     init() {
-        // 플레이어 상태
         this.player = {
             name: "데포로쥬",
             title: "붉은기사단",
@@ -50,18 +64,16 @@ class LineageEngine {
             flipX: false
         };
 
-        // 인벤토리 소지품
         this.inventory = [
-            { id: 'red_potion', name: '빨간 물약', count: 30, icon: 'icon_red_potion' },
-            { id: 'green_potion', name: '초록 물약', count: 10, icon: 'icon_green_potion' },
-            { id: 'brave_potion', name: '용기의 물약', count: 6, icon: 'icon_brave_potion' },
-            { id: 'teleport', name: '순간이동 주문서', count: 15, icon: 'icon_teleport' },
-            { id: 'return', name: '귀환 주문서', count: 5, icon: 'icon_return' },
-            { id: 'enchant_weapon', name: '무기 마법 주문서 (데이)', count: 5, icon: 'icon_enchant_weapon' },
-            { id: 'polymorph', name: '변신 주문서 (데스나이트)', count: 4, icon: 'icon_polymorph' }
+            { id: 'red_potion', name: '빨간 물약', count: 35, icon: 'icon_red_potion' },
+            { id: 'green_potion', name: '초록 물약', count: 12, icon: 'icon_green_potion' },
+            { id: 'brave_potion', name: '용기의 물약', count: 8, icon: 'icon_brave_potion' },
+            { id: 'teleport', name: '순간이동 주문서', count: 20, icon: 'icon_teleport' },
+            { id: 'return', name: '귀환 주문서', count: 6, icon: 'icon_return' },
+            { id: 'enchant_weapon', name: '무기 마법 주문서 (데이)', count: 6, icon: 'icon_enchant_weapon' },
+            { id: 'polymorph', name: '변신 주문서 (데스나이트)', count: 5, icon: 'icon_polymorph' }
         ];
 
-        // 단축창 (F1 ~ F8)
         this.quickSlots = [
             'red_potion', 'green_potion', 'brave_potion', 'teleport',
             'return', 'enchant_weapon', 'polymorph', 'energy_bolt'
@@ -77,8 +89,8 @@ class LineageEngine {
         this.buildWorld();
 
         this.logs = [];
-        this.addLog("시스템", "리니지 클래식 모바일 서버에 접속하셨습니다. (말하는 섬)");
-        this.addLog("안내", "화면 터치/클릭으로 이동 및 공격하고, 하단 단축 아이콘을 터치해 물약과 주문서를 사용하세요.");
+        this.addLog("시스템", "리니지 클래식 모바일 v1.2.0 서버에 접속하셨습니다.");
+        this.addLog("안내", "상단 [설명서]를 누르면 조작법과 공략을 확인할 수 있습니다.");
 
         this.bindEvents();
     }
@@ -100,6 +112,18 @@ class LineageEngine {
     spawnMonsters() {
         this.monsters = [];
 
+        // 난이도별 몬스터 체력 및 공격력 계수
+        let hpMult = 1.0;
+        let dmgMult = 1.0;
+        if (this.difficulty === 'easy') {
+            hpMult = 0.8;
+            dmgMult = 0.6;
+        } else if (this.difficulty === 'hard') {
+            hpMult = 1.35;
+            dmgMult = 1.45;
+        }
+
+        // 오크 4마리
         for (let i = 0; i < 4; i++) {
             this.monsters.push({
                 type: 'orc',
@@ -107,10 +131,10 @@ class LineageEngine {
                 x: 600 + Math.random() * 260,
                 y: 150 + Math.random() * 200,
                 radius: 20,
-                hp: 65,
-                maxHp: 65,
+                hp: Math.round(65 * hpMult),
+                maxHp: Math.round(65 * hpMult),
                 speed: 1.6,
-                damage: 12,
+                damage: 12 * dmgMult,
                 exp: 35,
                 adena: 60 + Math.floor(Math.random() * 40),
                 attackCooldown: 0,
@@ -118,6 +142,7 @@ class LineageEngine {
             });
         }
 
+        // 늑대인간 3마리
         for (let i = 0; i < 3; i++) {
             this.monsters.push({
                 type: 'lycanthrope',
@@ -125,10 +150,10 @@ class LineageEngine {
                 x: 650 + Math.random() * 220,
                 y: 380 + Math.random() * 180,
                 radius: 22,
-                hp: 110,
-                maxHp: 110,
+                hp: Math.round(110 * hpMult),
+                maxHp: Math.round(110 * hpMult),
                 speed: 2.2,
-                damage: 18,
+                damage: 18 * dmgMult,
                 exp: 65,
                 adena: 120 + Math.floor(Math.random() * 60),
                 attackCooldown: 0,
@@ -136,6 +161,7 @@ class LineageEngine {
             });
         }
 
+        // 셀로브 2마리
         for (let i = 0; i < 2; i++) {
             this.monsters.push({
                 type: 'selolb',
@@ -143,10 +169,10 @@ class LineageEngine {
                 x: 750 + Math.random() * 160,
                 y: 280 + Math.random() * 220,
                 radius: 24,
-                hp: 180,
-                maxHp: 180,
+                hp: Math.round(180 * hpMult),
+                maxHp: Math.round(180 * hpMult),
                 speed: 2.6,
-                damage: 26,
+                damage: 26 * dmgMult,
                 exp: 140,
                 adena: 250 + Math.floor(Math.random() * 100),
                 attackCooldown: 0,
@@ -164,26 +190,23 @@ class LineageEngine {
 
         let clickedEntity = null;
 
-        // NPC 터치/클릭
         for (const npc of this.npcs) {
-            if (Math.hypot(clickX - npc.x, clickY - npc.y) < npc.radius + 16) {
+            if (Math.hypot(clickX - npc.x, clickY - npc.y) < npc.radius + 18) {
                 this.openShopModal();
                 return;
             }
         }
 
-        // 몬스터 터치/클릭
         for (const m of this.monsters) {
-            if (Math.hypot(clickX - m.x, clickY - m.y) < m.radius + 18) {
+            if (Math.hypot(clickX - m.x, clickY - m.y) < m.radius + 20) {
                 clickedEntity = m;
                 break;
             }
         }
 
-        // 허수아비 터치/클릭
         if (!clickedEntity) {
             for (const d of this.dummies) {
-                if (Math.hypot(clickX - d.x, clickY - d.y) < d.radius + 18) {
+                if (Math.hypot(clickX - d.x, clickY - d.y) < d.radius + 20) {
                     clickedEntity = d;
                     break;
                 }
@@ -202,7 +225,6 @@ class LineageEngine {
     }
 
     bindEvents() {
-        // 마우스 클릭
         this.onMouseDown = (e) => {
             if (e.button === 0) {
                 this.handleActionAt(e.clientX, e.clientY);
@@ -212,7 +234,6 @@ class LineageEngine {
             }
         };
 
-        // 모바일 터치 이벤트 (스마트폰 터치 지원)
         this.onTouchStart = (e) => {
             e.preventDefault();
             if (e.touches && e.touches.length > 0) {
@@ -223,7 +244,6 @@ class LineageEngine {
 
         this.onContextMenu = (e) => e.preventDefault();
 
-        // 키보드 단축키
         this.onKeyDown = (e) => {
             if (!this.isRunning) return;
             const k = e.key;
@@ -281,7 +301,6 @@ class LineageEngine {
         window.lineageAudio.stopBGM();
     }
 
-    // --- 아이템 & 스킬 사용 로직 ---
     useItem(itemId) {
         const p = this.player;
 
@@ -289,9 +308,10 @@ class LineageEngine {
             const item = this.getItem(itemId);
             if (item && item.count > 0) {
                 item.count--;
-                p.hp = Math.min(p.maxHp, p.hp + 45);
+                const healAmount = this.difficulty === 'easy' ? 65 : 45;
+                p.hp = Math.min(p.maxHp, p.hp + healAmount);
                 window.lineageAudio.playPotion();
-                this.spawnDamageEffect(p.x, p.y, "+45 HP", "#22c55e");
+                this.spawnDamageEffect(p.x, p.y, `+${healAmount} HP`, "#22c55e");
                 this.updateHUD();
             } else {
                 this.addLog("시스템", "빨간 물약이 부족합니다.");
@@ -351,7 +371,7 @@ class LineageEngine {
             if (item && item.count > 0) {
                 item.count--;
                 p.isPolymorphed = true;
-                p.polyTimer = 40.0;
+                p.polyTimer = 45.0;
                 window.lineageAudio.playPolymorph();
                 this.addLog("변신", "★ 전설의 52레벨 [데스나이트]로 변신했습니다! (공속 대폭 상승) ★");
                 this.updateHUD();
@@ -377,9 +397,14 @@ class LineageEngine {
         if (w.enchant < 6) {
             w.enchant++;
             window.lineageAudio.playEnchantSuccess();
-            this.addLog("인챈트", `★ [대성공] ${w.name}이(가) 푸른빛을 발하며 +${w.enchant}로 강화되었습니다! (공격력 +${w.enchant * 2})`);
+            this.addLog("인챈트", `★ [대성공] ${w.name}이(가) 푸른빛을 발하며 +${w.enchant}로 강화되었습니다! (공격력 +${w.enchant * 3})`);
         } else {
-            const success = Math.random() < 0.65;
+            // 난이도에 따른 인챈트 성공률 조정 (쉬움: 80%, 보통: 65%, 어려움: 50%)
+            let successRate = 0.65;
+            if (this.difficulty === 'easy') successRate = 0.80;
+            if (this.difficulty === 'hard') successRate = 0.50;
+
+            const success = Math.random() < successRate;
             if (success) {
                 w.enchant++;
                 window.lineageAudio.playEnchantSuccess();
@@ -422,6 +447,7 @@ class LineageEngine {
                 if (l.category === '시스템') col = '#93c5fd';
                 if (l.category === '인챈트') col = '#fde047';
                 if (l.category === '변신') col = '#c084fc';
+                if (l.category === '설정') col = '#86efac';
                 return `<div class="log-line"><span class="log-time">[${l.time}]</span> <span style="color:${col}; font-weight:700;">[${l.category}]</span> ${l.msg}</div>`;
             }).join('');
         }
@@ -429,7 +455,8 @@ class LineageEngine {
 
     loop(timestamp) {
         if (!this.isRunning) return;
-        const dt = Math.min((timestamp - this.lastTime) / 1000, 0.1);
+        // 게임 속도 배율(speedMultiplier) 적용
+        const dt = Math.min((timestamp - this.lastTime) / 1000, 0.1) * this.speedMultiplier;
         this.lastTime = timestamp;
 
         window.lineageSprites.update(dt);
@@ -453,7 +480,7 @@ class LineageEngine {
         }
 
         const inSafetyZone = p.x < 420;
-        const regenRate = inSafetyZone ? 8 : 4;
+        const regenRate = inSafetyZone ? (this.difficulty === 'easy' ? 12 : 8) : 4;
         if (p.hp < p.maxHp) p.hp = Math.min(p.maxHp, p.hp + regenRate * dt);
         if (p.mp < p.maxMp) p.mp = Math.min(p.maxMp, p.mp + (regenRate * 0.8) * dt);
 
@@ -560,7 +587,7 @@ class LineageEngine {
 
         if (target.name === '허수아비') {
             if (p.level < 5) {
-                p.exp += 8;
+                p.exp += (this.difficulty === 'easy' ? 12 : 8);
                 if (p.exp >= p.maxExp) {
                     this.levelUp();
                 }
@@ -588,13 +615,14 @@ class LineageEngine {
         }
 
         p.targetEntity = null;
-        this.addLog("전투", `※ ${m.name}을(를) 처치하여 경험치(${m.exp})와 아데나를 획득했습니다.`);
+        const earnedExp = this.difficulty === 'easy' ? Math.round(m.exp * 1.3) : m.exp;
+        this.addLog("전투", `※ ${m.name}을(를) 처치하여 경험치(${earnedExp})와 아데나를 획득했습니다.`);
 
         this.drops.push({
             x: m.x,
             y: m.y,
             adena: m.adena,
-            exp: m.exp
+            exp: earnedExp
         });
 
         if (Math.random() < 0.25) {
