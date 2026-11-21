@@ -3,7 +3,7 @@
 > 1998년 클래식 리니지(말하는 섬 에피소드)의 감성과 조작감을 웹 및 모바일 브라우저에 그대로 구현한 2D 쿼터뷰 MMORPG 모방작입니다.
 
 * **실행 링크**: [https://kiuza1004.github.io/role_play1/](https://kiuza1004.github.io/role_play1/)
-* **현재 버전**: `v1.2.0` (Mobile Landscape Optimization & Speed/Difficulty Control)
+* **현재 버전**: `v1.2.1` (Monster AI Return to Spawn & Separation System)
 
 ---
 
@@ -52,7 +52,11 @@
 ---
 
 ## 📌 버전 업데이트 내역 (Version History)
-* **v1.2.0 (Current)**
+* **v1.2.1 (Current)**
+  * **몬스터 귀환 AI**: 주인공이 마을 안전지대(Safety Zone, `x < 420`)로 피신하거나 거리가 멀어지면 몬스터가 초기 스폰 위치로 자동 복귀
+  * **몬스터 뭉침 방지(Separation)**: 몬스터끼리 한 점으로 겹쳐서 몰려다니지 않도록 상호 반발력 기반 자동 분산 시스템 적용
+  * 안전지대 내 몬스터 공격 무효화 처리로 마을 내 안정적인 재정비 보장
+* **v1.2.0**
   * 스마트폰 가로 모드(Landscape) 시 화면 잘림 현상 완벽 해결 (우측 사이드바 4열 슬롯 자동 배치)
   * 게임 배속(1.0x, 1.5x, 2.0x) 및 3단계 난이도 조절 시스템 탑재
   * 게임 내 상세 공략 설명서 모달 및 상단 버전 표기 관리 기능 추가

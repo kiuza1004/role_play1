@@ -1,6 +1,6 @@
 /**
- * LineageEngine - 리니지 1 클래식 코어 게임 엔진 (v1.2.0)
- * 배속 조절(1.0x, 1.5x, 2.0x), 난이도 조절(쉬움, 보통, 어려움), 모바일 터치 및 가로모드 화면 맞춤 완벽 지원
+ * LineageEngine - 리니지 1 클래식 코어 게임 엔진 (v1.2.1)
+ * 안전지대 진입 시 몬스터 원위치 복귀 AI & 몬스터 뭉침 방지(Separation) 시스템 탑재
  */
 class LineageEngine {
     constructor(canvas) {
@@ -89,8 +89,8 @@ class LineageEngine {
         this.buildWorld();
 
         this.logs = [];
-        this.addLog("시스템", "리니지 클래식 모바일 v1.2.0 서버에 접속하셨습니다.");
-        this.addLog("안내", "상단 [설명서]를 누르면 조작법과 공략을 확인할 수 있습니다.");
+        this.addLog("시스템", "리니지 클래식 모바일 v1.2.1 서버에 접속하셨습니다.");
+        this.addLog("안내", "주인공이 마을(안전지대)로 피신하면 몬스터들이 원래 자리로 되돌아갑니다.");
 
         this.bindEvents();
     }
@@ -123,13 +123,17 @@ class LineageEngine {
             dmgMult = 1.45;
         }
 
-        // 오크 4마리
+        // 오크 4마리 (스폰 위치 지정)
         for (let i = 0; i < 4; i++) {
+            const sx = 580 + Math.random() * 260;
+            const sy = 140 + Math.random() * 180;
             this.monsters.push({
                 type: 'orc',
                 name: '가네프 오크',
-                x: 600 + Math.random() * 260,
-                y: 150 + Math.random() * 200,
+                x: sx,
+                y: sy,
+                spawnX: sx,
+                spawnY: sy,
                 radius: 20,
                 hp: Math.round(65 * hpMult),
                 maxHp: Math.round(65 * hpMult),
@@ -142,13 +146,17 @@ class LineageEngine {
             });
         }
 
-        // 늑대인간 3마리
+        // 늑대인간 3마리 (스폰 위치 지정)
         for (let i = 0; i < 3; i++) {
+            const sx = 640 + Math.random() * 240;
+            const sy = 340 + Math.random() * 160;
             this.monsters.push({
                 type: 'lycanthrope',
                 name: '라이칸스로프',
-                x: 650 + Math.random() * 220,
-                y: 380 + Math.random() * 180,
+                x: sx,
+                y: sy,
+                spawnX: sx,
+                spawnY: sy,
                 radius: 22,
                 hp: Math.round(110 * hpMult),
                 maxHp: Math.round(110 * hpMult),
@@ -161,13 +169,17 @@ class LineageEngine {
             });
         }
 
-        // 셀로브 2마리
+        // 셀로브 2마리 (스폰 위치 지정)
         for (let i = 0; i < 2; i++) {
+            const sx = 760 + Math.random() * 160;
+            const sy = 240 + Math.random() * 200;
             this.monsters.push({
                 type: 'selolb',
                 name: '셀로브',
-                x: 750 + Math.random() * 160,
-                y: 280 + Math.random() * 220,
+                x: sx,
+                y: sy,
+                spawnX: sx,
+                spawnY: sy,
                 radius: 24,
                 hp: Math.round(180 * hpMult),
                 maxHp: Math.round(180 * hpMult),
@@ -519,13 +531,44 @@ class LineageEngine {
             const mDy = p.y - m.y;
             const mDist = Math.hypot(mDx, mDy);
 
-            if (p.x >= 420 && mDist < 200 && mDist > 40) {
+            // 1) 주인공이 필드(x >= 420)에 있고 감지 반경(210px) 내에 있을 때: 추격
+            if (!inSafetyZone && mDist < 210 && mDist > 40) {
                 m.x += (mDx / mDist) * m.speed;
                 m.y += (mDy / mDist) * m.speed;
                 m.flipX = mDx < 0;
+            } 
+            // 2) 주인공이 안전지대(마을)로 피신했거나 너무 멀어졌을 때: 원래 자리(spawnX, spawnY)로 복귀!
+            else if (inSafetyZone || mDist >= 250) {
+                const sDx = m.spawnX - m.x;
+                const sDy = m.spawnY - m.y;
+                const sDist = Math.hypot(sDx, sDy);
+
+                if (sDist > 5) {
+                    const returnSpeed = m.speed * 1.35; // 원래 위치로 신속하게 복귀
+                    m.x += (sDx / sDist) * returnSpeed;
+                    m.y += (sDy / sDist) * returnSpeed;
+                    m.flipX = sDx < 0;
+                }
             }
 
-            if (mDist <= 46) {
+            // 3) 몬스터 뭉침 방지 (Separation):
+            // 몬스터끼리 겹쳐서 몰려다니지 않도록 반발력으로 서로를 밀어내어 분산
+            this.monsters.forEach(other => {
+                if (other !== m) {
+                    const sepDx = m.x - other.x;
+                    const sepDy = m.y - other.y;
+                    const sepDist = Math.hypot(sepDx, sepDy);
+                    const minDist = m.radius + other.radius + 8;
+                    if (sepDist < minDist && sepDist > 0) {
+                        const pushForce = (minDist - sepDist) * 0.08;
+                        m.x += (sepDx / sepDist) * pushForce;
+                        m.y += (sepDy / sepDist) * pushForce;
+                    }
+                }
+            });
+
+            // 근접 공격 (주인공이 필드에 있을 때만)
+            if (!inSafetyZone && mDist <= 46) {
                 if (m.attackCooldown <= 0) {
                     m.attackCooldown = 1.4;
                     p.hp -= Math.max(4, m.damage + p.ac / 4);
@@ -638,11 +681,15 @@ class LineageEngine {
 
         setTimeout(() => {
             if (this.isRunning) {
+                const rx = 600 + Math.random() * 260;
+                const ry = 160 + Math.random() * 260;
                 this.monsters.push({
                     type: m.type,
                     name: m.name,
-                    x: 600 + Math.random() * 300,
-                    y: 150 + Math.random() * 400,
+                    x: rx,
+                    y: ry,
+                    spawnX: rx,
+                    spawnY: ry,
                     radius: m.radius,
                     hp: m.maxHp,
                     maxHp: m.maxHp,
