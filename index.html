@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
-    <title>Lineage Classic Mobile v1.2.1 - 리니지 1 클래식</title>
+    <title>Lineage Classic 3D Mobile v2.0.0 - 리니지 1 클래식 3D</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -13,10 +13,11 @@
     <!-- 상단 글로벌 바 (버전 표기 & 메뉴) -->
     <header id="lineage-header">
         <div class="logo-text">
-            <span>⚔ LINEAGE CLASSIC</span>
-            <span class="version-badge" id="version-display" onclick="openGuideModal()">v1.2.1</span>
+            <span>⚔ LINEAGE CLASSIC 3D</span>
+            <span class="version-badge" id="version-display" onclick="openGuideModal()">v2.0.0 3D</span>
         </div>
         <div class="header-btns">
+            <button class="btn-header" id="btn-camera-view" onclick="toggle3DView()">🎥 3D 뷰</button>
             <button class="btn-header" id="btn-sound-toggle">🔊 BGM</button>
             <button class="btn-header" onclick="openSettingsModal()">⚙ 설정</button>
             <button class="btn-header" onclick="openGuideModal()">📖 설명서</button>
@@ -27,8 +28,10 @@
 
     <!-- 메인 게임 화면 -->
     <main id="game-container">
-        <!-- 리니지 필드 캔버스 (모바일 터치 이동 & 공격) -->
-        <canvas id="lineageCanvas" width="1024" height="520"></canvas>
+        <!-- 리니지 3D 뷰포트 (Three.js 3D 캔버스 & 모바일 터치) -->
+        <div id="game-viewport">
+            <canvas id="lineageCanvas" width="1024" height="520" style="display:none;"></canvas>
+        </div>
 
         <!-- 리니지 특유의 하단/우측 메탈 인터페이스 바 -->
         <footer id="lineage-hud">
@@ -144,6 +147,13 @@
             </div>
             <div class="modal-body">
                 <div class="setting-group">
+                    <span class="setting-label">▶ 3D 카메라 시점 조절</span>
+                    <div class="btn-group">
+                        <button class="btn-opt active" id="view-quarter" onclick="select3DView('quarter')">쿼터뷰 (전체 조망)</button>
+                        <button class="btn-opt" id="view-closeup" onclick="select3DView('closeup')">클로즈업 (액션 뷰)</button>
+                    </div>
+                </div>
+                <div class="setting-group">
                     <span class="setting-label">▶ 게임 배속 조절</span>
                     <div class="btn-group">
                         <button class="btn-opt active" id="spd-10" onclick="changeSpeed(1.0)">1.0x (표준)</button>
@@ -203,6 +213,14 @@
                         <li>단축창 <b>F7 변신 주문서</b>를 터치하면 타오르는 불꽃검을 든 데스나이트로 변신하며 압도적인 공격속도로 몬스터를 학살합니다.</li>
                     </ul>
                 </div>
+                <div class="guide-sec">
+                    <h4>5. 3D 입체 그래픽스 & 실시간 조명</h4>
+                    <ul>
+                        <li><b>3D 볼륨 모델</b>: 기사의 은빛 판금 갑옷, 데스나이트 화염검, 오크/라이칸/셀로브 야수 모델링 탑재</li>
+                        <li><b>실시간 그림자 및 횃불 조명</b>: PCF 소프트 섀도우와 흔들리는 주황빛 횃불 광원 효과</li>
+                        <li><b>시점 전환</b>: 상단 <code>🎥 3D 뷰</code> 버튼을 눌러 원거리 쿼터뷰와 초근접 클로즈업 액션뷰를 자유롭게 전환할 수 있습니다.</li>
+                    </ul>
+                </div>
             </div>
         </div>
 
@@ -258,8 +276,10 @@
     </main>
 
     <!-- 스크립트 모듈 로드 -->
+    <script src="js/three.min.js"></script>
     <script src="js/audio.js"></script>
     <script src="js/lineageSprites.js"></script>
+    <script src="js/lineage3D.js"></script>
     <script src="js/lineage.js"></script>
     <script>
         function openSettingsModal() {
@@ -273,6 +293,33 @@
         }
         function closeGuideModal() {
             document.getElementById('guide-modal').style.display = 'none';
+        }
+
+        function toggle3DView() {
+            if (window.lineageEngine) {
+                const mode = window.lineageEngine.toggleCameraView();
+                const btn = document.getElementById('btn-camera-view');
+                if (btn) btn.textContent = mode === '클로즈업 뷰' ? '🔍 클로즈업' : '🎥 쿼터뷰';
+                const qBtn = document.getElementById('view-quarter');
+                const cBtn = document.getElementById('view-closeup');
+                if (qBtn && cBtn) {
+                    if (mode === '클로즈업 뷰') {
+                        qBtn.classList.remove('active');
+                        cBtn.classList.add('active');
+                    } else {
+                        cBtn.classList.remove('active');
+                        qBtn.classList.add('active');
+                    }
+                }
+            }
+        }
+
+        function select3DView(type) {
+            if (window.lineageEngine && window.lineageEngine.lineage3D) {
+                if (window.lineageEngine.lineage3D.viewMode !== type) {
+                    toggle3DView();
+                }
+            }
         }
 
         function changeSpeed(spd) {
@@ -308,7 +355,8 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             const canvas = document.getElementById('lineageCanvas');
-            window.lineageEngine = new LineageEngine(canvas);
+            const viewport = document.getElementById('game-viewport');
+            window.lineageEngine = new LineageEngine(canvas, viewport);
             window.lineageEngine.start();
 
             document.querySelectorAll('.slot-item').forEach(slot => {

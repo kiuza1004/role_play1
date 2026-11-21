@@ -1,11 +1,13 @@
 /**
- * LineageEngine - 리니지 1 클래식 코어 게임 엔진 (v1.2.1)
+ * LineageEngine - 리니지 1 클래식 코어 게임 엔진 (v2.0.0 3D Epic Edition)
+ * Three.js 3D 입체 그래픽스 렌더러 연동 & 실시간 쿼터뷰/액션뷰 시점 시스템
  * 안전지대 진입 시 몬스터 원위치 복귀 AI & 몬스터 뭉침 방지(Separation) 시스템 탑재
  */
 class LineageEngine {
-    constructor(canvas) {
+    constructor(canvas, container) {
         this.canvas = canvas;
-        this.ctx = canvas.getContext('2d');
+        this.container = container || (canvas ? canvas.parentElement : null);
+        this.ctx = canvas ? canvas.getContext('2d') : null;
         this.isRunning = false;
         this.animationId = null;
 
@@ -13,7 +15,22 @@ class LineageEngine {
         this.speedMultiplier = 1.0; // 1.0, 1.5, 2.0
         this.difficulty = 'normal';   // 'easy', 'normal', 'hard'
 
+        // 3D 렌더러 초기화
+        if (window.Lineage3D && this.container) {
+            if (this.canvas) this.canvas.style.display = 'none';
+            this.lineage3D = new Lineage3D(this.container, this);
+        }
+
         this.init();
+    }
+
+    toggleCameraView() {
+        if (this.lineage3D) {
+            const mode = this.lineage3D.toggleViewMode();
+            this.addLog("설정", `카메라 시점이 [${mode}]로 전환되었습니다.`);
+            return mode;
+        }
+        return '쿼터뷰';
     }
 
     setSpeed(speed) {
@@ -89,8 +106,8 @@ class LineageEngine {
         this.buildWorld();
 
         this.logs = [];
-        this.addLog("시스템", "리니지 클래식 모바일 v1.2.1 서버에 접속하셨습니다.");
-        this.addLog("안내", "주인공이 마을(안전지대)로 피신하면 몬스터들이 원래 자리로 되돌아갑니다.");
+        this.addLog("시스템", "리니지 클래식 모바일 v2.0.0 (3D 입체 그래픽스 에디션) 서버에 접속하셨습니다.");
+        this.addLog("안내", "상단 [🎥 3D 시점] 버튼으로 쿼터뷰/클로즈업 입체 뷰를 전환할 수 있습니다.");
 
         this.bindEvents();
     }
@@ -431,6 +448,9 @@ class LineageEngine {
     }
 
     castEnergyBolt(target) {
+        if (this.lineage3D) {
+            this.lineage3D.spawnMagicMissile3D(this.player.x, this.player.y, target);
+        }
         window.lineageAudio.playSwing();
         this.addLog("마법", `${target.name}에게 에너지 볼트를 시전했습니다.`);
         const dmg = 35 + this.player.str;
@@ -473,7 +493,7 @@ class LineageEngine {
 
         window.lineageSprites.update(dt);
         this.update(dt);
-        this.render();
+        this.render(dt);
 
         this.animationId = requestAnimationFrame(this.loop);
     }
@@ -627,6 +647,9 @@ class LineageEngine {
         target.hp -= dmg;
         window.lineageAudio.playHit();
         this.spawnDamageEffect(target.x, target.y - 10, `${dmg}`, "#ffffff");
+        if (this.lineage3D) {
+            this.lineage3D.spawnHitSpark3D(target.x, target.y, 0xfacc15);
+        }
 
         if (target.name === '허수아비') {
             if (p.level < 5) {
@@ -733,6 +756,9 @@ class LineageEngine {
     }
 
     spawnDamageEffect(x, y, text, color) {
+        if (this.lineage3D) {
+            this.lineage3D.spawnDamageText3D(x, y, text, color);
+        }
         this.damageTexts.push({
             x: x + (Math.random() - 0.5) * 14,
             y: y - 10,
@@ -744,6 +770,9 @@ class LineageEngine {
     }
 
     spawnClickRipple(x, y) {
+        if (this.lineage3D) {
+            this.lineage3D.spawnClickRing3D(x, y);
+        }
         this.particles.push({
             type: 'ripple',
             x: x,
@@ -850,8 +879,14 @@ class LineageEngine {
         });
     }
 
-    render() {
+    render(dt = 0.016) {
+        if (this.lineage3D) {
+            this.lineage3D.update(dt);
+            return;
+        }
+
         const ctx = this.ctx;
+        if (!ctx) return;
         ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
         // 마을 잔디 타일
