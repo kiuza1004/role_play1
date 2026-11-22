@@ -1,7 +1,7 @@
 /**
- * LineageEngine - 리니지 1 클래식 코어 게임 엔진 (v2.0.0 3D Epic Edition)
+ * LineageEngine - 리니지 1 클래식 코어 게임 엔진 (v2.1.0 Story & Strategy Edition)
  * Three.js 3D 입체 그래픽스 렌더러 연동 & 실시간 쿼터뷰/액션뷰 시점 시스템
- * 안전지대 진입 시 몬스터 원위치 복귀 AI & 몬스터 뭉침 방지(Separation) 시스템 탑재
+ * 공식 스토리 라인 및 단계별 공략 가이드, 안전지대 귀환 AI & 뭉침 방지 시스템 완비
  */
 class LineageEngine {
     constructor(canvas, container) {
@@ -106,8 +106,9 @@ class LineageEngine {
         this.buildWorld();
 
         this.logs = [];
-        this.addLog("시스템", "리니지 클래식 모바일 v2.0.0 (3D 입체 그래픽스 에디션) 서버에 접속하셨습니다.");
-        this.addLog("안내", "상단 [🎥 3D 시점] 버튼으로 쿼터뷰/클로즈업 입체 뷰를 전환할 수 있습니다.");
+        this.addLog("시스템", "리니지 클래식 3D v2.1.0 (스토리 & 공략 대백과) 서버에 접속하셨습니다.");
+        this.addLog("스토리", "[데포로쥬] 왕자님, 말하는 섬 수련장에서 힘을 길러 반왕에게 빼앗긴 아덴을 되찾으십시오!");
+        this.addLog("공략", "상단 [📖 설명서]를 누르면 공식 스토리와 몬스터별 완벽 공략법을 확인할 수 있습니다.");
 
         this.bindEvents();
     }

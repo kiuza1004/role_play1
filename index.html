@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
-    <title>Lineage Classic 3D Mobile v2.0.0 - 리니지 1 클래식 3D</title>
+    <title>Lineage Classic 3D Mobile v2.1.0 - 스토리 & 공략 대백과</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -14,7 +14,7 @@
     <header id="lineage-header">
         <div class="logo-text">
             <span>⚔ LINEAGE CLASSIC 3D</span>
-            <span class="version-badge" id="version-display" onclick="openGuideModal()">v2.0.0 3D</span>
+            <span class="version-badge" id="version-display" onclick="openGuideModal()">v2.1.0 3D</span>
         </div>
         <div class="header-btns">
             <button class="btn-header" id="btn-camera-view" onclick="toggle3DView()">🎥 3D 뷰</button>
@@ -177,48 +177,79 @@
             </div>
         </div>
 
-        <!-- 모달 2: 상세 게임 설명서 -->
+        <!-- 모달 2: 상세 게임 설명서 (스토리 & 완벽 공략 대백과) -->
         <div class="lineage-modal" id="guide-modal">
             <div class="modal-header">
-                <span>리니지 클래식 모바일 완전 공략 설명서</span>
+                <span>리니지 클래식 3D - 공식 스토리 및 완벽 공략 대백과</span>
                 <span class="modal-close-btn" onclick="closeGuideModal()">✕</span>
             </div>
-            <div class="modal-body">
+            <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                <div class="guide-sec" style="background: rgba(30, 41, 59, 0.6); padding: 10px; border-radius: 6px; border-left: 3px solid #fde047; margin-bottom: 12px;">
+                    <h4 style="color:#fde047; margin-bottom: 6px;">📜 1. 리니지 세계관 공식 스토리 (Story)</h4>
+                    <p style="font-size:0.8rem; line-height:1.5; color:#cbd5e1; margin-bottom: 6px;">
+                        <b>[왕국의 몰락과 붉은기사단의 서약]</b><br>
+                        아덴 왕국의 정통 왕위 계승자인 어린 왕자 <b>데포로쥬(주인공)</b>는 반왕 켄라우헬의 잔혹한 반역으로 부왕을 잃고 왕국에서 추방당했습니다. 그는 충신들의 피눈물 어린 희생 속에 망망대해를 건너, 대마법사 하딘의 비호가 깃든 성역 <b>‘말하는 섬(Talking Island)’</b>에 당도했습니다.
+                    </p>
+                    <p style="font-size:0.8rem; line-height:1.5; color:#cbd5e1; margin-bottom: 6px;">
+                        <b>[안전지대: 말하는 섬 마을]</b><br>
+                        마을 수련장은 하딘의 고대 결계로 보호받아 어떤 마물도 칼을 휘두를 수 없는 절대 안전지대입니다. 이곳에서 의문의 만물상 <b>판도라</b>의 지원을 받으며, 데포로쥬는 잃어버린 왕좌를 되찾고 아덴 대륙을 구원할 최정예 <b>‘붉은기사단(Red Knights)’</b>의 첫 칼을 갈기 시작합니다.
+                    </p>
+                    <p style="font-size:0.8rem; line-height:1.5; color:#cbd5e1;">
+                        <b>[전투구역: 글루딘 야생의 위협과 데스나이트의 각성]</b><br>
+                        마을 울타리 너머의 글루딘 야생 사냥터는 반왕의 흑마법에 의해 포악해진 <b>가네프 오크</b>와 피에 굶주린 <b>라이칸스로프</b>, 지하 미궁에서 기어나온 거대 맹독 거미 <b>셀로브</b>가 도사리고 있습니다. 오직 글루디오 지하 깊은 곳에 잠든 언데드 군주 <b>‘데스나이트’</b>의 전설적인 검기를 각성한 자만이 이 야생을 정복하고 본토로 향할 수 있습니다!
+                    </p>
+                </div>
+
+                <div class="guide-sec" style="background: rgba(15, 23, 42, 0.7); padding: 10px; border-radius: 6px; border-left: 3px solid #38bdf8; margin-bottom: 12px;">
+                    <h4 style="color:#38bdf8; margin-bottom: 6px;">⚔️ 2. 단계별 완벽 정복 육성 공략 (Strategy)</h4>
+                    <div style="font-size:0.8rem; line-height:1.5; color:#e2e8f0;">
+                        <b>■ STEP 1: 허수아비 기본기 연마 (Lv.1 ~ Lv.5)</b>
+                        <ul>
+                            <li>시작 직후 절대 야생으로 나가지 말고 마을 좌측 <b>수련장 허수아비</b>를 공격하십시오.</li>
+                            <li>허수아비는 반격하지 않으며 초보자에게 안정적인 경험치를 제공합니다 (Lv.5 상한).</li>
+                            <li>안전지대에서는 HP/MP 자연 회복 속도가 2배로 증가하여 안전합니다.</li>
+                        </ul>
+                        <b>■ STEP 2: 필드 진출 및 몬스터별 각개격파 (Lv.5 ~ Lv.15)</b>
+                        <ul>
+                            <li><b>가네프 오크</b>: 이동 속도가 느리므로 기본 아데나와 주문서 수급에 최적입니다.</li>
+                            <li><b>라이칸스로프</b>: 높은 공격력과 민첩한 추격을 보이므로 1단 가속(초록이)을 유지하며 교전하십시오.</li>
+                            <li><b>셀로브 (위험도 최고)</b>: 글루딘 야생 최강의 몬스터입니다. 8개의 다리로 초고속 질주하므로 무기 인챈트 없이 무리하게 덤비면 위험합니다.</li>
+                        </ul>
+                        <b>■ STEP 3: 몬스터 안전지대 복귀 AI & 어그로 핑퐁 활용</b>
+                        <ul>
+                            <li>체력이 30% 이하로 떨어지거나 몬스터가 겹쳐 몰릴 때는 <b>즉시 좌측 마을(안전지대)로 피신</b>하십시오.</li>
+                            <li>플레이어가 안전지대로 진입하면 추격하던 몬스터들은 공격을 멈추고 <b>원래 스폰 자리로 되돌아갑니다.</b></li>
+                            <li>몬스터 뭉침 방지(Separation) 시스템이 작동하므로, 다시 흩어진 몬스터를 1마리씩 유인하여 안전하게 각개격파하십시오.</li>
+                        </ul>
+                        <b>■ STEP 4: 무기 인챈트(+9 싸울아비 장검) 빌드</b>
+                        <ul>
+                            <li><b>+0 ~ +5</b>: 100% 안전 인챈트 구간입니다. 데이 주문서가 생기는 즉시 +5까지 다이렉트 강화하십시오 (강화당 공격력 +3 증가).</li>
+                            <li><b>+6 이상</b>: 확률 인챈트(성공 시 신화급 파괴력, 실패 시 증발 파괴). 판도라 상점에서 데이를 여유 있게 확보한 후 도전하십시오.</li>
+                        </ul>
+                        <b>■ STEP 5: 전설의 데스나이트 3중 버프 극딜 콤보</b>
+                        <ul>
+                            <li>단축창 <b>F2(초록 물약: 1단 가속) + F3(용기의 물약: 2단 가속) + F7(데스나이트 변신 주문서)</b>를 동시 발동하면 상상을 초월하는 초극속 광속 칼질이 발동됩니다.</li>
+                            <li>원거리의 까다로운 몬스터는 <b>F8(에너지 볼트)</b>로 선제 타격하여 안전지대 경계로 끌어들여 사냥하십시오.</li>
+                        </ul>
+                    </div>
+                </div>
+
                 <div class="guide-sec">
-                    <h4>1. 조작법 (모바일 & PC)</h4>
+                    <h4>3. 조작법 (모바일 & PC)</h4>
                     <ul>
-                        <li><b>이동</b>: 화면 빈 땅 터치 또는 마우스 좌클릭</li>
-                        <li><b>공격</b>: 몬스터 또는 허수아비 터치/클릭 시 접근하여 자동 지속 칼질</li>
-                        <li><b>물약 복용</b>: 하단 F1(빨간물약) 터치 또는 마우스 우클릭 시 즉시 HP 회복</li>
-                        <li><b>가속</b>: F2(초록이 1단 가속), F3(용기의 물약 2단 가속) 복용 시 칼질 폭풍 가속</li>
+                        <li><b>이동</b>: 바닥 터치 또는 마우스 좌클릭</li>
+                        <li><b>공격</b>: 몬스터/허수아비 터치 또는 마우스 좌클릭 (자동 연속 타격)</li>
+                        <li><b>물약 연속 복용</b>: 하단 F1(빨간물약) 터치 또는 마우스 우클릭 / 키보드 <code>1</code> 또는 <code>F1</code></li>
+                        <li><b>3D 시점 전환</b>: 상단 <code>🎥 3D 뷰</code> 버튼으로 전장 전체 조망 쿼터뷰와 클로즈업 액션 뷰 전환</li>
                     </ul>
                 </div>
+
                 <div class="guide-sec">
-                    <h4>2. 초보자 육성 및 사냥터</h4>
+                    <h4>4. 단축 슬롯 (F1 ~ F8) 총람</h4>
                     <ul>
-                        <li><b>안전지대(마을)</b>: 좌측 수련장에서 허수아비를 쳐서 레벨 5까지 기초 훈련 가능 (HP/MP 자연 회복 2배). 위기 시 마을로 도망치면 몬스터가 원래 자리로 복귀합니다.</li>
-                        <li><b>전투구역(필드)</b>: 우측 야생으로 나가 가네프 오크, 라이칸스로프, 셀로브를 사냥하여 대량의 아데나와 주문서 획득 (몬스터 뭉침 방지 시스템 적용)</li>
-                    </ul>
-                </div>
-                <div class="guide-sec">
-                    <h4>3. 무기 인챈트(데이) 시스템</h4>
-                    <ul>
-                        <li><b>+0 ~ +5</b>: 100% 안전 인챈트 성공 (공격력 단계별 증가)</li>
-                        <li><b>+6 이상</b>: 확률 인챈트 (성공 시 신화적 대미지, 실패 시 무기 증발 파괴)</li>
-                    </ul>
-                </div>
-                <div class="guide-sec">
-                    <h4>4. 52레벨 전설의 데스나이트 변신</h4>
-                    <ul>
-                        <li>단축창 <b>F7 변신 주문서</b>를 터치하면 타오르는 불꽃검을 든 데스나이트로 변신하며 압도적인 공격속도로 몬스터를 학살합니다.</li>
-                    </ul>
-                </div>
-                <div class="guide-sec">
-                    <h4>5. 3D 입체 그래픽스 & 실시간 조명</h4>
-                    <ul>
-                        <li><b>3D 볼륨 모델</b>: 기사의 은빛 판금 갑옷, 데스나이트 화염검, 오크/라이칸/셀로브 야수 모델링 탑재</li>
-                        <li><b>실시간 그림자 및 횃불 조명</b>: PCF 소프트 섀도우와 흔들리는 주황빛 횃불 광원 효과</li>
-                        <li><b>시점 전환</b>: 상단 <code>🎥 3D 뷰</code> 버튼을 눌러 원거리 쿼터뷰와 초근접 클로즈업 액션뷰를 자유롭게 전환할 수 있습니다.</li>
+                        <li><b>F1 빨간물약</b>: HP 즉시 회복 / <b>F2 초록물약</b>: 30초 1단 가속 / <b>F3 용기물약</b>: 25초 기사 전용 2단 가속</li>
+                        <li><b>F4 순간이동</b>: 임의 좌표 텔레포트 / <b>F5 귀환주문서</b>: 마을 안전지대 즉시 귀환</li>
+                        <li><b>F6 데이주문서</b>: 무기 인챈트 시도 / <b>F7 데스변신</b>: 45초 전설의 데스나이트 각성 / <b>F8 에너지볼트</b>: 원거리 마법 발사</li>
                     </ul>
                 </div>
             </div>
