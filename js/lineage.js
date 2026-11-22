@@ -165,6 +165,7 @@ class LineageEngine {
         this.drops = [];
         this.damageTexts = [];
         this.particles = [];
+        this.logs = [];
 
         // 멀티 섹터 모험 & 사이클 시스템 상태
         this.currentCycle = 1;
@@ -174,8 +175,7 @@ class LineageEngine {
 
         this.buildWorld();
 
-        this.logs = [];
-        this.addLog("시스템", "리니지 클래식 3D v2.2.0 (멀티 섹터 모험 & 사이클 레벨업) 서버에 접속하셨습니다.");
+        this.addLog("시스템", "리니지 클래식 3D v2.2.1 (멀티 섹터 모험 & 사이클 레벨업) 서버에 접속하셨습니다.");
         this.addLog("스토리", "[데포로쥬] 왕자님, 말하는 섬에서 정비 후 우측 출정 포탈로 진격하십시오!");
         this.addLog("안내", "각 구역 마물을 모두 소탕하면 다음 차원 포탈이 열립니다.");
 
@@ -611,6 +611,7 @@ class LineageEngine {
     }
 
     addLog(category, msg) {
+        if (!this.logs) this.logs = [];
         const time = new Date().toLocaleTimeString('ko-KR', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
         this.logs.unshift({ time, category, msg });
         if (this.logs.length > 50) this.logs.pop();
