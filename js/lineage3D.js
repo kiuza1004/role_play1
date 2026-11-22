@@ -478,163 +478,624 @@ class Lineage3D {
     // 캐릭터 & 몬스터 3D 모델 빌더
     // ==========================================
 
-    // 1. 기사 (Knight)
+    // ==========================================
+    // 캐릭터 & 몬스터 정밀 3D 절차적 텍스처 캐시
+    // ==========================================
+    getKnightShieldTexture() {
+        if (this._texKnightShield) return this._texKnightShield;
+        this._texKnightShield = this.createProceduralCanvas(256, 384, (ctx, w, h) => {
+            // 1. 방패 바탕 (상하 분할: 상단 로얄블루, 하단 버건디 레드)
+            const grad = ctx.createLinearGradient(0, 0, 0, h);
+            grad.addColorStop(0, '#1e3a8a');
+            grad.addColorStop(0.48, '#172554');
+            grad.addColorStop(0.52, '#7f1d1d');
+            grad.addColorStop(1, '#450a0a');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // 2. 외부 황금 테두리 프레임
+            ctx.strokeStyle = '#f59e0b';
+            ctx.lineWidth = 14;
+            ctx.strokeRect(7, 7, w - 14, h - 14);
+
+            ctx.strokeStyle = '#fde047';
+            ctx.lineWidth = 4;
+            ctx.strokeRect(16, 16, w - 32, h - 32);
+
+            // 3. 중앙 황금 십자가 및 문양
+            ctx.fillStyle = '#fbbf24';
+            ctx.fillRect(w / 2 - 14, 25, 28, h - 50);
+            ctx.fillRect(25, h * 0.35 - 14, w - 50, 28);
+
+            // 중앙 다이아몬드 보석 문양
+            ctx.fillStyle = '#ef4444';
+            ctx.beginPath();
+            ctx.moveTo(w / 2, h * 0.35 - 28);
+            ctx.lineTo(w / 2 + 26, h * 0.35);
+            ctx.lineTo(w / 2, h * 0.35 + 28);
+            ctx.lineTo(w / 2 - 26, h * 0.35);
+            ctx.closePath();
+            ctx.fill();
+            ctx.strokeStyle = '#fde047';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            // 4. 모서리 황금 리벳 징
+            ctx.fillStyle = '#fef08a';
+            const rivets = [[12, 12], [w - 12, 12], [12, h - 12], [w - 12, h - 12], [12, h / 2], [w - 12, h / 2]];
+            rivets.forEach(([rx, ry]) => {
+                ctx.beginPath();
+                ctx.arc(rx, ry, 5, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        });
+        return this._texKnightShield;
+    }
+
+    getKnightChestTexture() {
+        if (this._texKnightChest) return this._texKnightChest;
+        this._texKnightChest = this.createProceduralCanvas(256, 256, (ctx, w, h) => {
+            const grad = ctx.createLinearGradient(0, 0, w, h);
+            grad.addColorStop(0, '#94a3b8');
+            grad.addColorStop(0.5, '#cbd5e1');
+            grad.addColorStop(1, '#64748b');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // 흉부 중심선 음영
+            ctx.strokeStyle = '#334155';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(w / 2, 20);
+            ctx.lineTo(w / 2, h - 20);
+            ctx.stroke();
+
+            // 가슴 황금 엠블럼 (왕실 휘장)
+            ctx.fillStyle = '#d97706';
+            ctx.beginPath();
+            ctx.arc(w / 2, 75, 26, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#fde047';
+            ctx.beginPath();
+            ctx.arc(w / 2, 75, 20, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 하단 복부 판금 분할선 및 리벳
+            for (let y = 140; y < h - 20; y += 32) {
+                ctx.strokeStyle = '#1e293b';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(30, y);
+                ctx.lineTo(w - 30, y);
+                ctx.stroke();
+
+                ctx.fillStyle = '#f59e0b';
+                ctx.beginPath();
+                ctx.arc(45, y, 4, 0, Math.PI * 2);
+                ctx.arc(w - 45, y, 4, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        });
+        return this._texKnightChest;
+    }
+
+    getKnightCapeTexture() {
+        if (this._texKnightCape) return this._texKnightCape;
+        this._texKnightCape = this.createProceduralCanvas(128, 256, (ctx, w, h) => {
+            const grad = ctx.createLinearGradient(0, 0, 0, h);
+            grad.addColorStop(0, '#b91c1c');
+            grad.addColorStop(0.6, '#991b1b');
+            grad.addColorStop(1, '#450a0a');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // 주름 음영 세로줄
+            for (let x = 16; x < w; x += 22) {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
+                ctx.fillRect(x, 10, 8, h - 20);
+            }
+
+            // 테두리 황금 자수
+            ctx.strokeStyle = '#f59e0b';
+            ctx.lineWidth = 6;
+            ctx.strokeRect(3, 3, w - 6, h - 6);
+            ctx.strokeStyle = '#fde047';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(8, 8, w - 16, h - 16);
+        });
+        return this._texKnightCape;
+    }
+
+    getSwordRuneTexture() {
+        if (this._texSwordRune) return this._texSwordRune;
+        this._texSwordRune = this.createProceduralCanvas(64, 256, (ctx, w, h) => {
+            ctx.fillStyle = '#f1f5f9';
+            ctx.fillRect(0, 0, w, h);
+
+            // 중심 혈조 (Fuller)
+            ctx.fillStyle = '#94a3b8';
+            ctx.fillRect(w / 2 - 4, 15, 8, h - 30);
+
+            // 푸른빛 룬 문자 각인
+            ctx.fillStyle = '#0284c7';
+            for (let y = 35; y < h - 35; y += 30) {
+                ctx.beginPath();
+                ctx.arc(w / 2, y, 5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        });
+        return this._texSwordRune;
+    }
+
+    getDeathKnightCapeTexture() {
+        if (this._texDeathKnightCape) return this._texDeathKnightCape;
+        this._texDeathKnightCape = this.createProceduralCanvas(128, 256, (ctx, w, h) => {
+            ctx.fillStyle = '#1c1917';
+            ctx.fillRect(0, 0, w, h);
+            ctx.strokeStyle = '#dc2626';
+            ctx.lineWidth = 3;
+            for (let y = 10; y < h; y += 20) {
+                ctx.beginPath();
+                ctx.moveTo(Math.random() * w, y);
+                ctx.lineTo(Math.random() * w, y + 15);
+                ctx.stroke();
+            }
+        });
+        return this._texDeathKnightCape;
+    }
+
+    // ==========================================
+    // 캐릭터 & 몬스터 3D 모델 빌더
+    // ==========================================
+
+    // 1. 클래식 명품 기사 (Knight - 데포로쥬 왕자)
     createKnightMesh() {
         const root = new THREE.Group();
-        const armorMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.85, roughness: 0.25 });
-        const goldMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, metalness: 0.9, roughness: 0.2 });
 
-        const chest = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.5, 1.4, 8), armorMat);
-        chest.position.y = 2.0;
-        chest.castShadow = true;
-        root.add(chest);
+        // 머티리얼 구성
+        const plateMat = new THREE.MeshStandardMaterial({
+            color: 0xc8d0db,
+            metalness: 0.9,
+            roughness: 0.22
+        });
+        const chestPlateMat = new THREE.MeshStandardMaterial({
+            map: this.getKnightChestTexture(),
+            metalness: 0.88,
+            roughness: 0.24
+        });
+        const goldTrimMat = new THREE.MeshStandardMaterial({
+            color: 0xf59e0b,
+            metalness: 0.92,
+            roughness: 0.18
+        });
+        const leatherMat = new THREE.MeshStandardMaterial({
+            color: 0x27272a,
+            roughness: 0.85
+        });
+        const shieldFaceMat = new THREE.MeshStandardMaterial({
+            map: this.getKnightShieldTexture(),
+            metalness: 0.65,
+            roughness: 0.35
+        });
+        const swordBladeMat = new THREE.MeshStandardMaterial({
+            map: this.getSwordRuneTexture(),
+            metalness: 0.95,
+            roughness: 0.12
+        });
+        const capeMat = new THREE.MeshStandardMaterial({
+            map: this.getKnightCapeTexture(),
+            roughness: 0.75,
+            side: THREE.DoubleSide
+        });
 
-        const lShoulder = new THREE.Mesh(new THREE.SphereGeometry(0.42, 8, 8), goldMat);
-        lShoulder.position.set(-0.9, 2.5, 0);
-        lShoulder.castShadow = true;
-        root.add(lShoulder);
+        // 상체 컨테이너 (바운스 애니메이션 지원)
+        const bodyGroup = new THREE.Group();
+        root.add(bodyGroup);
+        root.bodyGroup = bodyGroup;
 
-        const rShoulder = new THREE.Mesh(new THREE.SphereGeometry(0.42, 8, 8), goldMat);
-        rShoulder.position.set(0.9, 2.5, 0);
-        rShoulder.castShadow = true;
-        root.add(rShoulder);
+        // 1-1. 흉갑 (Cuirass) & 목 보호대 (Gorget)
+        const chestUpper = new THREE.Mesh(new THREE.CylinderGeometry(0.72, 0.58, 1.0, 10), chestPlateMat);
+        chestUpper.position.y = 2.15;
+        chestUpper.castShadow = true;
+        bodyGroup.add(chestUpper);
 
-        const helm = new THREE.Mesh(new THREE.SphereGeometry(0.55, 12, 12), armorMat);
-        helm.position.y = 3.2;
-        helm.castShadow = true;
-        root.add(helm);
+        const chestLower = new THREE.Mesh(new THREE.CylinderGeometry(0.58, 0.52, 0.6, 10), plateMat);
+        chestLower.position.y = 1.65;
+        chestLower.castShadow = true;
+        bodyGroup.add(chestLower);
 
-        const plume = new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.8, 6), new THREE.MeshStandardMaterial({ color: 0xef4444, roughness: 0.5 }));
-        plume.position.set(0, 3.8, -0.2);
-        plume.rotation.x = -0.3;
-        root.add(plume);
+        const gorget = new THREE.Mesh(new THREE.TorusGeometry(0.42, 0.1, 8, 16), goldTrimMat);
+        gorget.position.set(0, 2.7, 0);
+        gorget.rotation.x = Math.PI / 2;
+        bodyGroup.add(gorget);
 
-        // 방패
+        // 허리 벨트 & 버클
+        const belt = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.55, 0.22, 12), leatherMat);
+        belt.position.y = 1.35;
+        bodyGroup.add(belt);
+
+        const buckle = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.24, 0.26), goldTrimMat);
+        buckle.position.set(0, 1.35, 0.55);
+        bodyGroup.add(buckle);
+
+        // 대퇴부 장갑판 (Faulds & Tassets)
+        const lTasset = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.55, 0.08), goldTrimMat);
+        lTasset.position.set(-0.35, 1.15, 0.48);
+        lTasset.rotation.x = 0.2;
+        bodyGroup.add(lTasset);
+
+        const rTasset = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.55, 0.08), goldTrimMat);
+        rTasset.position.set(0.35, 1.15, 0.48);
+        rTasset.rotation.x = 0.2;
+        bodyGroup.add(rTasset);
+
+        // 1-2. 투구 (Great Helm with Visor & Plume)
+        const helmGroup = new THREE.Group();
+        const helmBase = new THREE.Mesh(new THREE.DodecahedronGeometry(0.54, 1), plateMat);
+        helmBase.position.y = 3.25;
+        helmBase.castShadow = true;
+        helmGroup.add(helmBase);
+
+        // T-자형 황금 십자군 바이저
+        const visorCrossV = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.42, 0.14), goldTrimMat);
+        visorCrossV.position.set(0, 3.25, 0.52);
+        helmGroup.add(visorCrossV);
+
+        const visorCrossH = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.1, 0.14), goldTrimMat);
+        visorCrossH.position.set(0, 3.32, 0.5);
+        helmGroup.add(visorCrossH);
+
+        // 눈 슬릿 (검은색 틈새)
+        const slitMat = new THREE.MeshBasicMaterial({ color: 0x05070a });
+        const lEyeSlit = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.04, 0.05), slitMat);
+        lEyeSlit.position.set(-0.18, 3.32, 0.57);
+        helmGroup.add(lEyeSlit);
+        const rEyeSlit = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.04, 0.05), slitMat);
+        rEyeSlit.position.set(0.18, 3.32, 0.57);
+        helmGroup.add(rEyeSlit);
+
+        // 헬멧 상단 3중 깃털 (Royal Plumes)
+        const plumeMat1 = new THREE.MeshStandardMaterial({ color: 0xef4444, roughness: 0.6 });
+        const plumeMat2 = new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.5 });
+        const p1 = new THREE.Mesh(new THREE.ConeGeometry(0.18, 0.9, 6), plumeMat1);
+        p1.position.set(0, 3.9, -0.2);
+        p1.rotation.x = -0.35;
+        helmGroup.add(p1);
+
+        const p2 = new THREE.Mesh(new THREE.ConeGeometry(0.14, 0.75, 6), plumeMat2);
+        p2.position.set(-0.12, 3.82, -0.22);
+        p2.rotation.x = -0.4;
+        p2.rotation.z = -0.15;
+        helmGroup.add(p2);
+
+        const p3 = new THREE.Mesh(new THREE.ConeGeometry(0.14, 0.75, 6), plumeMat2);
+        p3.position.set(0.12, 3.82, -0.22);
+        p3.rotation.x = -0.4;
+        p3.rotation.z = 0.15;
+        helmGroup.add(p3);
+
+        bodyGroup.add(helmGroup);
+
+        // 1-3. 3단 레이어드 견갑 (Pauldrons)
+        const createPauldron = (side) => {
+            const pGroup = new THREE.Group();
+            const top = new THREE.Mesh(new THREE.SphereGeometry(0.44, 10, 8), goldTrimMat);
+            top.scale.set(1.1, 0.7, 0.9);
+            top.castShadow = true;
+            pGroup.add(top);
+
+            const mid = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.44, 0.25, 8), plateMat);
+            mid.position.y = -0.22;
+            pGroup.add(mid);
+
+            const bot = new THREE.Mesh(new THREE.CylinderGeometry(0.36, 0.4, 0.22, 8), goldTrimMat);
+            bot.position.y = -0.4;
+            pGroup.add(bot);
+
+            pGroup.position.set(side * 0.98, 2.45, 0);
+            return pGroup;
+        };
+        bodyGroup.add(createPauldron(-1));
+        bodyGroup.add(createPauldron(1));
+
+        // 1-4. 왼팔 & 카이트 실드 (Left Arm & Shield)
+        const leftArm = new THREE.Group();
+        leftArm.position.set(-0.85, 2.3, 0);
+
+        const lUpperArm = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.16, 0.65, 8), plateMat);
+        lUpperArm.position.y = -0.32;
+        leftArm.add(lUpperArm);
+
+        const lElbow = new THREE.Mesh(new THREE.SphereGeometry(0.19, 8, 8), goldTrimMat);
+        lElbow.position.y = -0.65;
+        leftArm.add(lElbow);
+
+        const lForearm = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.15, 0.6, 8), plateMat);
+        lForearm.position.set(0, -0.95, 0.15);
+        lForearm.rotation.x = Math.PI / 4;
+        leftArm.add(lForearm);
+
+        // 명품 카이트 실드 (Kite Shield)
         const shieldGroup = new THREE.Group();
-        const shieldMesh = new THREE.Mesh(new THREE.BoxGeometry(0.12, 1.5, 1.0), armorMat);
-        shieldMesh.castShadow = true;
-        shieldGroup.add(shieldMesh);
-        const crossMesh = new THREE.Mesh(new THREE.BoxGeometry(0.16, 1.2, 0.25), goldMat);
-        shieldGroup.add(crossMesh);
-        shieldGroup.position.set(-0.95, 1.9, 0.35);
-        root.add(shieldGroup);
+        const sFace = new THREE.Mesh(new THREE.BoxGeometry(0.12, 1.8, 1.25), shieldFaceMat);
+        sFace.castShadow = true;
+        shieldGroup.add(sFace);
 
-        // 검
+        // 방패 테두리 프레임
+        const sBorder = new THREE.Mesh(new THREE.BoxGeometry(0.14, 1.86, 1.3), goldTrimMat);
+        sBorder.scale.set(0.9, 0.95, 0.95);
+        shieldGroup.add(sBorder);
+
+        // 중앙 볼록 황금 스파이크 보스 (Shield Boss)
+        const sBoss = new THREE.Mesh(new THREE.ConeGeometry(0.24, 0.35, 8), goldTrimMat);
+        sBoss.rotation.z = -Math.PI / 2;
+        sBoss.position.set(-0.16, 0.2, 0);
+        shieldGroup.add(sBoss);
+
+        shieldGroup.position.set(-0.25, -0.9, 0.38);
+        leftArm.add(shieldGroup);
+        bodyGroup.add(leftArm);
+        root.leftArm = leftArm;
+
+        // 1-5. 오른팔 & 명검 싸울아비 장검 (Right Arm & Sword)
+        const rightArm = new THREE.Group();
+        rightArm.position.set(0.85, 2.3, 0);
+
+        const rUpperArm = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.16, 0.65, 8), plateMat);
+        rUpperArm.position.y = -0.32;
+        rightArm.add(rUpperArm);
+
+        const rElbow = new THREE.Mesh(new THREE.SphereGeometry(0.19, 8, 8), goldTrimMat);
+        rElbow.position.y = -0.65;
+        rightArm.add(rElbow);
+
+        const rForearm = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.15, 0.6, 8), plateMat);
+        rForearm.position.set(0, -0.95, 0.15);
+        rForearm.rotation.x = Math.PI / 4;
+        rightArm.add(rForearm);
+
+        // 명품 싸울아비 장검 (Saulabi Longsword)
         const swordGroup = new THREE.Group();
-        const blade = new THREE.Mesh(new THREE.BoxGeometry(0.1, 2.2, 0.35), new THREE.MeshStandardMaterial({ color: 0xe2e8f0, metalness: 0.95, roughness: 0.15 }));
-        blade.position.y = 1.1;
+
+        // 날렵한 양날 칼날 (Diamond Blade)
+        const blade = new THREE.Mesh(new THREE.BoxGeometry(0.09, 2.5, 0.42), swordBladeMat);
+        blade.position.y = 1.35;
         blade.castShadow = true;
         swordGroup.add(blade);
-        const guard = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.15, 0.9), goldMat);
-        swordGroup.add(guard);
-        const hilt = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.6, 6), goldMat);
-        hilt.position.y = -0.35;
+
+        // 칼끝 뾰족한 칼날 팁
+        const bladeTip = new THREE.Mesh(new THREE.ConeGeometry(0.22, 0.5, 4), swordBladeMat);
+        bladeTip.position.y = 2.75;
+        bladeTip.rotation.y = Math.PI / 4;
+        swordGroup.add(bladeTip);
+
+        // 황금 독수리 날개 크로스가드
+        const guardCenter = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.16, 1.05), goldTrimMat);
+        guardCenter.position.y = 0.08;
+        swordGroup.add(guardCenter);
+
+        // 가드 중앙 루비 보석
+        const ruby = new THREE.Mesh(new THREE.OctahedronGeometry(0.14), new THREE.MeshStandardMaterial({ color: 0xdc2626, metalness: 0.4, roughness: 0.1 }));
+        ruby.position.set(0.14, 0.08, 0);
+        swordGroup.add(ruby);
+
+        // 가죽 감긴 힐트 (손잡이)
+        const hilt = new THREE.Mesh(new THREE.CylinderGeometry(0.085, 0.085, 0.72, 8), leatherMat);
+        hilt.position.y = -0.38;
         swordGroup.add(hilt);
-        swordGroup.position.set(0.9, 1.8, 0.4);
+
+        // 황금 팔각 폼멜
+        const pommel = new THREE.Mesh(new THREE.DodecahedronGeometry(0.16), goldTrimMat);
+        pommel.position.y = -0.78;
+        swordGroup.add(pommel);
+
+        // 은은한 인챈트 룬 오라 (포인트 라이트)
+        const runeGlow = new THREE.PointLight(0x38bdf8, 1.2, 5, 2);
+        runeGlow.position.set(0, 1.2, 0);
+        swordGroup.add(runeGlow);
+
+        swordGroup.position.set(0, -1.15, 0.4);
         swordGroup.rotation.x = Math.PI / 4;
-        root.add(swordGroup);
+        rightArm.add(swordGroup);
+        bodyGroup.add(rightArm);
+        root.rightArm = rightArm;
         root.swordMesh = swordGroup;
 
-        // 다리
-        const legGeo = new THREE.CylinderGeometry(0.22, 0.2, 1.2, 6);
-        const leftLeg = new THREE.Mesh(legGeo, armorMat);
-        leftLeg.position.set(-0.35, 0.7, 0);
-        leftLeg.castShadow = true;
-        root.add(leftLeg);
-        root.leftLeg = leftLeg;
+        // 1-6. 붉은기사단 왕실 망토 (Royal Cloak)
+        const cape = new THREE.Mesh(new THREE.BoxGeometry(1.48, 2.3, 0.08), capeMat);
+        cape.position.set(0, 1.6, -0.62);
+        cape.rotation.x = 0.15;
+        cape.castShadow = true;
+        bodyGroup.add(cape);
+        root.cape = cape;
 
-        const rightLeg = new THREE.Mesh(legGeo, armorMat);
-        rightLeg.position.set(0.35, 0.7, 0);
-        rightLeg.castShadow = true;
+        // 1-7. 강철 판금 다리 & 기사 부츠 (Greaves & Sabatons)
+        const createLeg = (side) => {
+            const leg = new THREE.Group();
+            leg.position.set(side * 0.36, 1.2, 0);
+
+            // 허벅지 (Cuisses)
+            const thigh = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.22, 0.65, 8), plateMat);
+            thigh.position.y = -0.32;
+            thigh.castShadow = true;
+            leg.add(thigh);
+
+            // 무릎 보호대 (Poleyn with Gold Rivet)
+            const knee = new THREE.Mesh(new THREE.SphereGeometry(0.23, 8, 8), goldTrimMat);
+            knee.position.set(0, -0.65, 0.08);
+            knee.castShadow = true;
+            leg.add(knee);
+
+            // 정강이 (Greaves)
+            const calf = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.19, 0.6, 8), plateMat);
+            calf.position.y = -0.98;
+            calf.castShadow = true;
+            leg.add(calf);
+
+            // 기사 사바톤 부츠 (Sabatons)
+            const foot = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.22, 0.52), goldTrimMat);
+            foot.position.set(0, -1.32, 0.12);
+            foot.castShadow = true;
+            leg.add(foot);
+
+            return leg;
+        };
+
+        const leftLeg = createLeg(-1);
+        const rightLeg = createLeg(1);
+        root.add(leftLeg);
         root.add(rightLeg);
+        root.leftLeg = leftLeg;
         root.rightLeg = rightLeg;
 
         return root;
     }
 
-    // 2. 52LV 전설의 데스나이트 (플레이어 변신용)
+    // 2. 52LV 전설의 데스나이트 (플레이어 변신용 - Dark Knight of Legend)
     createDeathKnightMesh() {
         const root = new THREE.Group();
-        const darkMat = new THREE.MeshStandardMaterial({ color: 0x18181b, metalness: 0.9, roughness: 0.2 });
-        const goldAccentMat = new THREE.MeshStandardMaterial({ color: 0xd97706, metalness: 0.8, roughness: 0.3 });
 
-        const chest = new THREE.Mesh(new THREE.CylinderGeometry(0.75, 0.55, 1.5, 8), darkMat);
-        chest.position.y = 2.1;
+        const obsidianMat = new THREE.MeshStandardMaterial({
+            color: 0x11161d,
+            metalness: 0.95,
+            roughness: 0.18
+        });
+        const darkGoldMat = new THREE.MeshStandardMaterial({
+            color: 0xb45309,
+            metalness: 0.9,
+            roughness: 0.25
+        });
+        const capeMat = new THREE.MeshStandardMaterial({
+            map: this.getDeathKnightCapeTexture(),
+            roughness: 0.85,
+            side: THREE.DoubleSide
+        });
+
+        const bodyGroup = new THREE.Group();
+        root.add(bodyGroup);
+        root.bodyGroup = bodyGroup;
+
+        // 흉갑
+        const chest = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.58, 1.55, 10), obsidianMat);
+        chest.position.y = 2.15;
         chest.castShadow = true;
-        root.add(chest);
+        bodyGroup.add(chest);
 
-        const lSpike = new THREE.Mesh(new THREE.ConeGeometry(0.35, 0.9, 6), goldAccentMat);
-        lSpike.position.set(-1.0, 2.7, 0);
-        lSpike.rotation.z = 0.5;
+        // 어깨 악마 스파이크 (Fiend Spikes)
+        const lSpike = new THREE.Mesh(new THREE.ConeGeometry(0.38, 1.0, 6), darkGoldMat);
+        lSpike.position.set(-1.08, 2.75, 0);
+        lSpike.rotation.z = 0.55;
         lSpike.castShadow = true;
-        root.add(lSpike);
+        bodyGroup.add(lSpike);
 
-        const rSpike = new THREE.Mesh(new THREE.ConeGeometry(0.35, 0.9, 6), goldAccentMat);
-        rSpike.position.set(1.0, 2.7, 0);
-        rSpike.rotation.z = -0.5;
+        const rSpike = new THREE.Mesh(new THREE.ConeGeometry(0.38, 1.0, 6), darkGoldMat);
+        rSpike.position.set(1.08, 2.75, 0);
+        rSpike.rotation.z = -0.55;
         rSpike.castShadow = true;
-        root.add(rSpike);
+        bodyGroup.add(rSpike);
 
-        const skull = new THREE.Mesh(new THREE.SphereGeometry(0.55, 10, 10), darkMat);
-        skull.position.y = 3.3;
+        // 해골 투구 & 거대한 악마의 뿔 2쌍
+        const skull = new THREE.Mesh(new THREE.DodecahedronGeometry(0.58, 1), obsidianMat);
+        skull.position.y = 3.35;
         skull.castShadow = true;
-        root.add(skull);
+        bodyGroup.add(skull);
 
-        const lHorn = new THREE.Mesh(new THREE.ConeGeometry(0.18, 0.7, 5), goldAccentMat);
-        lHorn.position.set(-0.4, 3.8, 0);
-        lHorn.rotation.z = 0.4;
-        root.add(lHorn);
+        // 주 뿔
+        const lHorn = new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.95, 6), darkGoldMat);
+        lHorn.position.set(-0.45, 3.9, 0);
+        lHorn.rotation.z = 0.45;
+        bodyGroup.add(lHorn);
 
-        const rHorn = new THREE.Mesh(new THREE.ConeGeometry(0.18, 0.7, 5), goldAccentMat);
-        rHorn.position.set(0.4, 3.8, 0);
-        rHorn.rotation.z = -0.4;
-        root.add(rHorn);
+        const rHorn = new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.95, 6), darkGoldMat);
+        rHorn.position.set(0.45, 3.9, 0);
+        rHorn.rotation.z = -0.45;
+        bodyGroup.add(rHorn);
 
-        // 붉은 안광
+        // 이글거리는 핏빛 안광 (PointLight 포함)
         const eyeMat = new THREE.MeshBasicMaterial({ color: 0xff0033 });
-        const lEye = new THREE.Mesh(new THREE.SphereGeometry(0.1, 6, 6), eyeMat);
-        lEye.position.set(-0.2, 3.35, 0.48);
-        root.add(lEye);
-        const rEye = new THREE.Mesh(new THREE.SphereGeometry(0.1, 6, 6), eyeMat);
-        rEye.position.set(0.2, 3.35, 0.48);
-        root.add(rEye);
+        const lEye = new THREE.Mesh(new THREE.SphereGeometry(0.12, 6, 6), eyeMat);
+        lEye.position.set(-0.22, 3.38, 0.52);
+        bodyGroup.add(lEye);
 
-        // 붉은 망토
-        const cape = new THREE.Mesh(new THREE.BoxGeometry(1.4, 2.2, 0.1), new THREE.MeshStandardMaterial({ color: 0x991b1b, roughness: 0.9 }));
-        cape.position.set(0, 1.8, -0.6);
-        cape.rotation.x = 0.18;
+        const rEye = new THREE.Mesh(new THREE.SphereGeometry(0.12, 6, 6), eyeMat);
+        rEye.position.set(0.22, 3.38, 0.52);
+        bodyGroup.add(rEye);
+
+        const eyeGlow = new THREE.PointLight(0xff0033, 1.5, 6, 2);
+        eyeGlow.position.set(0, 3.38, 0.7);
+        bodyGroup.add(eyeGlow);
+
+        // 전장의 찢어진 망토
+        const cape = new THREE.Mesh(new THREE.BoxGeometry(1.5, 2.3, 0.08), capeMat);
+        cape.position.set(0, 1.7, -0.65);
+        cape.rotation.x = 0.2;
         cape.castShadow = true;
-        root.add(cape);
+        bodyGroup.add(cape);
         root.cape = cape;
 
-        // 화염검
+        // 화염검 (Flaming Sword of Despair)
         const flameSwordGroup = new THREE.Group();
-        const flameBlade = new THREE.Mesh(new THREE.BoxGeometry(0.12, 2.5, 0.45), new THREE.MeshStandardMaterial({ color: 0xff4500, emissive: 0xff2200, emissiveIntensity: 0.8, roughness: 0.2 }));
-        flameBlade.position.y = 1.25;
+        const flameBlade = new THREE.Mesh(new THREE.BoxGeometry(0.13, 2.7, 0.48), new THREE.MeshStandardMaterial({
+            color: 0xff4500,
+            emissive: 0xff2200,
+            emissiveIntensity: 0.9,
+            roughness: 0.2
+        }));
+        flameBlade.position.y = 1.35;
         flameBlade.castShadow = true;
         flameSwordGroup.add(flameBlade);
 
-        const swordLight = new THREE.PointLight(0xff3700, 2.0, 10, 2);
-        swordLight.position.set(0, 1.2, 0);
+        const flameTip = new THREE.Mesh(new THREE.ConeGeometry(0.25, 0.55, 4), new THREE.MeshStandardMaterial({
+            color: 0xff3300,
+            emissive: 0xff1100,
+            emissiveIntensity: 1.0
+        }));
+        flameTip.position.y = 2.95;
+        flameTip.rotation.y = Math.PI / 4;
+        flameSwordGroup.add(flameTip);
+
+        const swordLight = new THREE.PointLight(0xff3700, 2.5, 12, 2);
+        swordLight.position.set(0, 1.35, 0);
         flameSwordGroup.add(swordLight);
 
-        flameSwordGroup.position.set(0.95, 1.8, 0.4);
+        flameSwordGroup.position.set(1.0, 1.9, 0.45);
         flameSwordGroup.rotation.x = Math.PI / 4;
-        root.add(flameSwordGroup);
+        bodyGroup.add(flameSwordGroup);
         root.swordMesh = flameSwordGroup;
 
         // 다리
-        const legGeo = new THREE.CylinderGeometry(0.24, 0.2, 1.3, 6);
-        const leftLeg = new THREE.Mesh(legGeo, darkMat);
-        leftLeg.position.set(-0.38, 0.7, 0);
-        leftLeg.castShadow = true;
-        root.add(leftLeg);
-        root.leftLeg = leftLeg;
+        const createDLeg = (side) => {
+            const leg = new THREE.Group();
+            leg.position.set(side * 0.4, 1.25, 0);
 
-        const rightLeg = new THREE.Mesh(legGeo, darkMat);
-        rightLeg.position.set(0.38, 0.7, 0);
-        rightLeg.castShadow = true;
+            const thigh = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.23, 0.7, 8), obsidianMat);
+            thigh.position.y = -0.35;
+            thigh.castShadow = true;
+            leg.add(thigh);
+
+            const knee = new THREE.Mesh(new THREE.SphereGeometry(0.25, 8, 8), darkGoldMat);
+            knee.position.set(0, -0.7, 0.08);
+            knee.castShadow = true;
+            leg.add(knee);
+
+            const calf = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.2, 0.65, 8), obsidianMat);
+            calf.position.y = -1.05;
+            calf.castShadow = true;
+            leg.add(calf);
+
+            const foot = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.24, 0.55), darkGoldMat);
+            foot.position.set(0, -1.4, 0.12);
+            foot.castShadow = true;
+            leg.add(foot);
+
+            return leg;
+        };
+
+        const leftLeg = createDLeg(-1);
+        const rightLeg = createDLeg(1);
+        root.add(leftLeg);
         root.add(rightLeg);
+        root.leftLeg = leftLeg;
         root.rightLeg = rightLeg;
 
         return root;
@@ -1114,22 +1575,51 @@ class Lineage3D {
         const isMoving = Math.hypot(p.targetX - p.x, p.targetY - p.y) > 4;
         const animTime = performance.now() * 0.008;
 
-        if (isMoving && pMesh.leftLeg && pMesh.rightLeg) {
-            pMesh.leftLeg.rotation.x = Math.sin(animTime) * 0.6;
-            pMesh.rightLeg.rotation.x = -Math.sin(animTime) * 0.6;
-        } else if (pMesh.leftLeg && pMesh.rightLeg) {
-            pMesh.leftLeg.rotation.x = 0;
-            pMesh.rightLeg.rotation.x = 0;
+        if (isMoving) {
+            if (pMesh.leftLeg && pMesh.rightLeg) {
+                pMesh.leftLeg.rotation.x = Math.sin(animTime) * 0.65;
+                pMesh.rightLeg.rotation.x = -Math.sin(animTime) * 0.65;
+            }
+            if (pMesh.leftArm && pMesh.rightArm && !p.isAttacking) {
+                pMesh.leftArm.rotation.x = -Math.sin(animTime) * 0.35;
+                pMesh.rightArm.rotation.x = Math.sin(animTime) * 0.35;
+            }
+            if (pMesh.bodyGroup) {
+                pMesh.bodyGroup.position.y = Math.abs(Math.sin(animTime * 2)) * 0.08;
+            }
+        } else {
+            if (pMesh.leftLeg && pMesh.rightLeg) {
+                pMesh.leftLeg.rotation.x = 0;
+                pMesh.rightLeg.rotation.x = 0;
+            }
+            if (pMesh.leftArm && pMesh.rightArm && !p.isAttacking) {
+                pMesh.leftArm.rotation.x = 0;
+                pMesh.rightArm.rotation.x = 0;
+            }
+            if (pMesh.bodyGroup) {
+                pMesh.bodyGroup.position.y = Math.sin(performance.now() * 0.003) * 0.03;
+            }
         }
 
-        if (p.isAttacking && pMesh.swordMesh) {
-            pMesh.swordMesh.rotation.x = (Math.PI / 4) + Math.sin(performance.now() * 0.02) * 0.8;
-        } else if (pMesh.swordMesh) {
-            pMesh.swordMesh.rotation.x = Math.PI / 4;
+        if (p.isAttacking) {
+            const attackSwing = Math.sin(performance.now() * 0.025);
+            if (pMesh.rightArm) {
+                pMesh.rightArm.rotation.x = (Math.PI / 4) + attackSwing * 0.9;
+            }
+            if (pMesh.swordMesh) {
+                pMesh.swordMesh.rotation.x = (Math.PI / 4) + attackSwing * 0.6;
+            }
+            if (pMesh.leftArm) {
+                pMesh.leftArm.rotation.x = -0.2 + attackSwing * 0.15;
+            }
+        } else {
+            if (pMesh.swordMesh) {
+                pMesh.swordMesh.rotation.x = Math.PI / 4;
+            }
         }
 
         if (pMesh.cape) {
-            pMesh.cape.rotation.x = 0.2 + (isMoving ? Math.sin(animTime * 1.5) * 0.25 : 0.05);
+            pMesh.cape.rotation.x = 0.18 + (isMoving ? Math.sin(animTime * 1.6) * 0.28 : Math.sin(performance.now() * 0.003) * 0.04);
         }
 
         this.updateCameraPosition(p.x, p.y);
