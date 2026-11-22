@@ -3,7 +3,7 @@
 > 1998년 클래식 리니지(말하는 섬 에피소드)의 감성과 조작감을 웹 및 모바일 브라우저에 그대로 구현하고, Three.js 기반의 웅장한 3D 입체 그래픽스 및 실시간 동적 조명/그림자 시스템으로 혁신한 3D MMORPG입니다.
 
 * **실행 링크**: [https://kiuza1004.github.io/role_play1/](https://kiuza1004.github.io/role_play1/)
-* **현재 버전**: `v2.4.1` (Landscape/Portrait Viewport Optimization & Zero Screen Blocking Edition - 가로/세로 전 화면 최적화 & 시야 100% 개방)
+* **현재 버전**: `v2.4.2` (Landscape/Portrait Viewport Optimization & Zero Screen Blocking Edition - 가로/세로 전 화면 최적화 & 시야 100% 개방)
 
 ---
 
@@ -119,7 +119,14 @@
 ---
 
 ## 📌 버전 업데이트 내역 (Version History)
-* **v2.4.1 (Current - 가로/세로 전 화면 최적화 & 시야 100% 완전 개방)**
+* **v2.4.2 (Current - 가로/세로 전 화면 최적화 & 시야 100% 완전 개방)**
+  * **메인 화면 시야 가림 0% 달성 (세로 모드 헤더 1줄 슬림화 & HUD 이동)**:
+    * 상단 헤더에 있던 긴 `[제 1사이클] [말하는 섬] [안전지대]` 안내 배지를 하단 조작창(HUD) 중앙 최상단(`.sector-hud-strip`)으로 이전 배치
+    * 상단 헤더를 단 1줄(34px 고정, `flex-wrap: nowrap`)로 극단적 슬림화하여 모바일 세로 모드에서 줄바꿈으로 화면 상단을 30~40% 덮어버리던 가림 현상을 완전히 박멸
+  * **모바일 가로 모드 (Landscape) 아래창 잘림 완전 해결 & 뷰포트 하단 조작성 100% 확보**:
+    * 모바일 브라우저 주소창/하단바로 인한 뷰포트 초과 현상을 방지하기 위해 `var(--app-height)` 동적 감지 스크립트 및 `position: fixed; height: var(--app-height)` 레이아웃 적용
+    * 가로 모드 시 좌측 3D 게임 뷰포트(높이 100%, flex: 1) + 우측 슬림 HUD 패널(폭 275px, 높이 100%) 듀얼 분할을 구축하여 조작창과 퀵슬롯이 100% 한눈에 들어오고, 뷰포트 최하단 터치가 정상 작동하여 캐릭터를 밑으로 자유롭게 내릴 수 있도록 개선
+* **v2.4.1 (Landscape/Portrait Viewport Optimization & Zero Screen Blocking Edition)**
   * **메인 화면 시야 가림 0% 달성 (Zero Screen Blocking)**:
     * 뷰포트 내부를 가리던 `제1사이클` 및 `안전지대` 안내 바를 화면 밖 상단 글로벌 헤더의 로고 라인(`[1사이클] 말하는 섬 (안전지대)`)으로 인라인 통합
     * 게임 3D 뷰포트 캔버스 위에 일체의 텍스트/뱃지가 올라오지 않아 1픽셀도 가려지지 않는 100% 완전 개방 전장 시야 구현

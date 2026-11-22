@@ -5,21 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
-    <title>Lineage Classic 3D Mobile v2.4.1 - 가로/세로 전 화면 최적화 & 시야 100% 개방</title>
-    <link rel="stylesheet" href="css/style.css?v=2.4.1">
+    <title>Lineage Classic 3D Mobile v2.4.2 - 가로/세로 전 화면 최적화 & 시야 100% 개방</title>
+    <link rel="stylesheet" href="css/style.css?v=2.4.2">
+    <script>
+        // 모바일 브라우저 주소창/하단바 대응 실제 가시 높이 동기화
+        function updateAppHeight() {
+            const vh = window.innerHeight;
+            document.documentElement.style.setProperty('--app-height', vh + 'px');
+            if (window.lineageEngine && window.lineageEngine.lineage3D) {
+                window.lineageEngine.lineage3D.onWindowResize();
+            }
+        }
+        window.addEventListener('resize', updateAppHeight);
+        window.addEventListener('orientationchange', function() {
+            setTimeout(updateAppHeight, 150);
+        });
+        updateAppHeight();
+    </script>
 </head>
 <body>
 
-    <!-- 상단 글로벌 바 (위치 정보 인라인 통합 & 화면 가림 0% 달성) -->
+    <!-- 상단 글로벌 바 (단 1줄 32px 컴팩트 헤더 - 화면 가림 0% 달성) -->
     <header id="lineage-header">
         <div class="logo-group">
             <span class="logo-title">⚔ LINEAGE 3D</span>
-            <div class="sector-inline-badge">
-                <span class="badge-cycle" id="hud-cycle-text">1사이클</span>
-                <span class="sector-title" id="hud-sector-text">말하는 섬 (마을)</span>
-                <span class="badge-monsters" id="hud-monsters-text">안전지대</span>
-            </div>
-            <span class="version-badge" id="version-display" onclick="openGuideModal()">v2.4.1 3D</span>
+            <span class="version-badge" id="version-display" onclick="openGuideModal()">v2.4.2 3D</span>
         </div>
         <div class="header-btns">
             <button class="btn-header" id="btn-camera-view" onclick="toggle3DView()">🎥 3D 뷰</button>
@@ -57,6 +67,15 @@
 
             <!-- 2. 중앙 HP/MP 게이지 & F1~F8 퀵슬롯 -->
             <section class="hud-center">
+                <!-- 모험 섹터 & 사이클 인디케이터 (메인화면 가림 방지를 위해 하단 HUD로 이동) -->
+                <div class="sector-hud-strip">
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                        <span class="badge-cycle" id="hud-cycle-text">제 1사이클</span>
+                        <span class="sector-title" id="hud-sector-text">말하는 섬 (마을)</span>
+                    </div>
+                    <span class="badge-monsters" id="hud-monsters-text">안전지대</span>
+                </div>
+
                 <!-- HP/MP 바 -->
                 <div class="gauges-container">
                     <div class="gauge-row">
@@ -321,16 +340,16 @@
     </main>
 
     <!-- 스크립트 모듈 로드 -->
-    <script src="js/three.min.js?v=2.4.1"></script>
+    <script src="js/three.min.js?v=2.4.2"></script>
     <script>
         if (typeof THREE === 'undefined') {
             document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"><\/script>');
         }
     </script>
-    <script src="js/audio.js?v=2.4.1"></script>
-    <script src="js/lineageSprites.js?v=2.4.1"></script>
-    <script src="js/lineage3D.js?v=2.4.1"></script>
-    <script src="js/lineage.js?v=2.4.1"></script>
+    <script src="js/audio.js?v=2.4.2"></script>
+    <script src="js/lineageSprites.js?v=2.4.2"></script>
+    <script src="js/lineage3D.js?v=2.4.2"></script>
+    <script src="js/lineage.js?v=2.4.2"></script>
     <script>
         function openSettingsModal() {
             document.getElementById('settings-modal').style.display = 'flex';
