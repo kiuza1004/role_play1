@@ -5,16 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
-    <title>Lineage Classic 3D Mobile v2.4.0 - 화면 줌 컨트롤 & 시야 확장 최적화</title>
-    <link rel="stylesheet" href="css/style.css?v=2.4.0">
+    <title>Lineage Classic 3D Mobile v2.4.1 - 가로/세로 전 화면 최적화 & 시야 100% 개방</title>
+    <link rel="stylesheet" href="css/style.css?v=2.4.1">
 </head>
 <body>
 
-    <!-- 상단 글로벌 바 (버전 표기 & 메뉴) -->
+    <!-- 상단 글로벌 바 (위치 정보 인라인 통합 & 화면 가림 0% 달성) -->
     <header id="lineage-header">
-        <div class="logo-text">
-            <span>⚔ LINEAGE 3D</span>
-            <span class="version-badge" id="version-display" onclick="openGuideModal()">v2.4.0 3D</span>
+        <div class="logo-group">
+            <span class="logo-title">⚔ LINEAGE 3D</span>
+            <div class="sector-inline-badge">
+                <span class="badge-cycle" id="hud-cycle-text">1사이클</span>
+                <span class="sector-title" id="hud-sector-text">말하는 섬 (마을)</span>
+                <span class="badge-monsters" id="hud-monsters-text">안전지대</span>
+            </div>
+            <span class="version-badge" id="version-display" onclick="openGuideModal()">v2.4.1 3D</span>
         </div>
         <div class="header-btns">
             <button class="btn-header" id="btn-camera-view" onclick="toggle3DView()">🎥 3D 뷰</button>
@@ -28,19 +33,8 @@
 
     <!-- 메인 게임 화면 -->
     <main id="game-container">
-        <!-- 리니지 3D 뷰포트 (Three.js 3D 캔버스 & 모바일 터치) -->
+        <!-- 리니지 3D 뷰포트 (Three.js 3D 캔버스 & 가림 0% 완전 개방) -->
         <div id="game-viewport">
-            <!-- 모험 구역 및 사이클 상태 인디케이터 바 (가림 방지 초슬림 미니멀 칩) -->
-            <div id="sector-bar">
-                <div class="sector-info-left">
-                    <span class="badge-cycle" id="hud-cycle-text">제 1사이클</span>
-                    <span class="sector-title" id="hud-sector-text">말하는 섬 (마을)</span>
-                </div>
-                <div class="sector-info-right">
-                    <span class="badge-monsters" id="hud-monsters-text">안전지대</span>
-                </div>
-            </div>
-
             <!-- 화면 확대/축소 플로팅 컨트롤러 -->
             <div id="zoom-controls">
                 <button class="btn-zoom" onclick="zoomGame(true)" title="화면 확대 (줌인)">➕</button>
@@ -327,16 +321,16 @@
     </main>
 
     <!-- 스크립트 모듈 로드 -->
-    <script src="js/three.min.js?v=2.4.0"></script>
+    <script src="js/three.min.js?v=2.4.1"></script>
     <script>
         if (typeof THREE === 'undefined') {
             document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"><\/script>');
         }
     </script>
-    <script src="js/audio.js?v=2.4.0"></script>
-    <script src="js/lineageSprites.js?v=2.4.0"></script>
-    <script src="js/lineage3D.js?v=2.4.0"></script>
-    <script src="js/lineage.js?v=2.4.0"></script>
+    <script src="js/audio.js?v=2.4.1"></script>
+    <script src="js/lineageSprites.js?v=2.4.1"></script>
+    <script src="js/lineage3D.js?v=2.4.1"></script>
+    <script src="js/lineage.js?v=2.4.1"></script>
     <script>
         function openSettingsModal() {
             document.getElementById('settings-modal').style.display = 'flex';
