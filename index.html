@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
-    <title>Lineage Classic 3D Mobile v2.1.0 - 스토리 & 공략 대백과</title>
+    <title>Lineage Classic 3D Mobile v2.2.0 - 멀티 섹터 모험 & 사이클 레벨업</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -14,7 +14,7 @@
     <header id="lineage-header">
         <div class="logo-text">
             <span>⚔ LINEAGE CLASSIC 3D</span>
-            <span class="version-badge" id="version-display" onclick="openGuideModal()">v2.1.0 3D</span>
+            <span class="version-badge" id="version-display" onclick="openGuideModal()">v2.2.0 3D</span>
         </div>
         <div class="header-btns">
             <button class="btn-header" id="btn-camera-view" onclick="toggle3DView()">🎥 3D 뷰</button>
@@ -30,6 +30,16 @@
     <main id="game-container">
         <!-- 리니지 3D 뷰포트 (Three.js 3D 캔버스 & 모바일 터치) -->
         <div id="game-viewport">
+            <!-- 모험 구역 및 사이클 상태 인디케이터 바 -->
+            <div id="sector-bar">
+                <div class="sector-info-left">
+                    <span class="badge-cycle" id="hud-cycle-text">제 1사이클</span>
+                    <span class="sector-title" id="hud-sector-text">말하는 섬 베이스캠프 (마을)</span>
+                </div>
+                <div class="sector-info-right">
+                    <span class="badge-monsters" id="hud-monsters-text">안전지대 (우측 포탈로 출정)</span>
+                </div>
+            </div>
             <canvas id="lineageCanvas" width="1024" height="520" style="display:none;"></canvas>
         </div>
 
@@ -244,12 +254,14 @@
                     </ul>
                 </div>
 
-                <div class="guide-sec">
-                    <h4>4. 단축 슬롯 (F1 ~ F8) 총람</h4>
+                <div class="guide-sec" style="background: rgba(30, 41, 59, 0.7); padding: 10px; border-radius: 6px; border-left: 3px solid #a855f7;">
+                    <h4 style="color:#c084fc; margin-bottom: 6px;">🌀 5. 4대 섹터 모험 및 사이클 레벨업 규칙</h4>
                     <ul>
-                        <li><b>F1 빨간물약</b>: HP 즉시 회복 / <b>F2 초록물약</b>: 30초 1단 가속 / <b>F3 용기물약</b>: 25초 기사 전용 2단 가속</li>
-                        <li><b>F4 순간이동</b>: 임의 좌표 텔레포트 / <b>F5 귀환주문서</b>: 마을 안전지대 즉시 귀환</li>
-                        <li><b>F6 데이주문서</b>: 무기 인챈트 시도 / <b>F7 데스변신</b>: 45초 전설의 데스나이트 각성 / <b>F8 에너지볼트</b>: 원거리 마법 발사</li>
+                        <li><b>섹터 0: 말하는 섬 마을 (안전지대)</b> - 판도라 상점 및 허수아비 훈련장. 정비 후 우측 출정 포탈로 이동!</li>
+                        <li><b>섹터 1: 글루딘 야생 밀림</b> - 가네프 오크 & 라이칸스로프. 마물 전멸 시 2섹터 차원 포탈 개방!</li>
+                        <li><b>섹터 2: 비명의 개미굴 & 지하 암반</b> - 동굴 늑대인간 & 맹독 셀로브. 마물 전멸 시 3섹터 차원 포탈 개방!</li>
+                        <li><b>섹터 3: 글루디오 성채 폐허 & 제단</b> - 해골 기사 스켈레톤, 변종 셀로브, <b>최종 보스 타락한 데스나이트</b> 출현!</li>
+                        <li><b>사이클 정복 & 몬스터 레벨업</b>: 보스 격파 시 대량의 아데나(+5,000 * N)와 데이 3장 지급 후 마을로 안전 귀환. 마을에서 HP/MP가 100% 충전되며, 다음 출정 시에는 몬스터들의 레벨과 스탯이 상향되어 끝없는 도전이 이어집니다!</li>
                     </ul>
                 </div>
             </div>
@@ -366,7 +378,7 @@
             document.getElementById(`diff-${diff}`).classList.add('active');
             if (window.lineageEngine) {
                 window.lineageEngine.setDifficulty(diff);
-                window.lineageEngine.spawnMonsters();
+                window.lineageEngine.loadSector(window.lineageEngine.currentSector);
             }
         }
 

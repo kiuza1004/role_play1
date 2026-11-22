@@ -1,8 +1,62 @@
 /**
- * LineageEngine - 리니지 1 클래식 코어 게임 엔진 (v2.1.0 Story & Strategy Edition)
+ * LineageEngine - 리니지 1 클래식 코어 게임 엔진 (v2.2.0 Multi-Sector & Cycle Edition)
  * Three.js 3D 입체 그래픽스 렌더러 연동 & 실시간 쿼터뷰/액션뷰 시점 시스템
- * 공식 스토리 라인 및 단계별 공략 가이드, 안전지대 귀환 AI & 뭉침 방지 시스템 완비
+ * 4대 섹터 모험, 마물 전멸 시 포탈 개방, 안전지대 정비 및 사이클별 몬스터 레벨업 시스템 완비
  */
+
+const SECTORS = [
+    {
+        id: 0,
+        name: "말하는 섬 베이스캠프 (마을)",
+        theme: "village",
+        isSafetyZone: true,
+        desc: "하딘의 결계가 지켜주는 성역. 판도라 상점과 허수아비로 정비 후 출정하십시오.",
+        fogColor: 0x11161d,
+        ambientColor: 0xd0e0ff,
+        spawns: []
+    },
+    {
+        id: 1,
+        name: "섹터 1: 글루딘 야생 밀림",
+        theme: "forest",
+        isSafetyZone: false,
+        desc: "가네프 오크 부족과 라이칸스로프가 배회하는 울창한 숲길.",
+        fogColor: 0x0f2015,
+        ambientColor: 0xa7f3d0,
+        spawns: [
+            { type: 'orc', count: 4, name: '가네프 오크', baseHp: 70, baseDmg: 10, speed: 1.5, radius: 20, exp: 40, adena: 80 },
+            { type: 'lycanthrope', count: 3, name: '라이칸스로프', baseHp: 110, baseDmg: 15, speed: 2.1, radius: 22, exp: 75, adena: 130 }
+        ]
+    },
+    {
+        id: 2,
+        name: "섹터 2: 비명의 개미굴 & 지하 암반",
+        theme: "cave",
+        isSafetyZone: false,
+        desc: "지하 깊은 곳에 둥지를 튼 거대 맹독 거미 셀로브와 동굴 야수들.",
+        fogColor: 0x1f1025,
+        ambientColor: 0xe9d5ff,
+        spawns: [
+            { type: 'lycanthrope', count: 3, name: '동굴 늑대인간', baseHp: 135, baseDmg: 18, speed: 2.2, radius: 22, exp: 95, adena: 160 },
+            { type: 'selolb', count: 3, name: '맹독 셀로브', baseHp: 190, baseDmg: 25, speed: 2.4, radius: 24, exp: 140, adena: 240 }
+        ]
+    },
+    {
+        id: 3,
+        name: "섹터 3: 글루디오 성채 폐허 & 데스나이트의 제단",
+        theme: "ruins",
+        isSafetyZone: false,
+        desc: "타락한 언데드 기사단장과 해골 기사들이 지키는 최종 결전지.",
+        fogColor: 0x260a0a,
+        ambientColor: 0xfecaca,
+        spawns: [
+            { type: 'skeleton', count: 4, name: '해골 기사', baseHp: 160, baseDmg: 20, speed: 1.9, radius: 20, exp: 120, adena: 200 },
+            { type: 'selolb', count: 2, name: '변종 셀로브', baseHp: 210, baseDmg: 27, speed: 2.4, radius: 24, exp: 160, adena: 260 },
+            { type: 'boss_deathknight', count: 1, name: '타락한 데스나이트 군주', baseHp: 520, baseDmg: 38, speed: 2.1, radius: 28, exp: 450, adena: 1200 }
+        ]
+    }
+];
+
 class LineageEngine {
     constructor(canvas, container) {
         this.canvas = canvas;
@@ -103,12 +157,18 @@ class LineageEngine {
         this.damageTexts = [];
         this.particles = [];
 
+        // 멀티 섹터 모험 & 사이클 시스템 상태
+        this.currentCycle = 1;
+        this.currentSector = 0;
+        this.portalActive = true;
+        this.totalSectorMonsters = 0;
+
         this.buildWorld();
 
         this.logs = [];
-        this.addLog("시스템", "리니지 클래식 3D v2.1.0 (스토리 & 공략 대백과) 서버에 접속하셨습니다.");
-        this.addLog("스토리", "[데포로쥬] 왕자님, 말하는 섬 수련장에서 힘을 길러 반왕에게 빼앗긴 아덴을 되찾으십시오!");
-        this.addLog("공략", "상단 [📖 설명서]를 누르면 공식 스토리와 몬스터별 완벽 공략법을 확인할 수 있습니다.");
+        this.addLog("시스템", "리니지 클래식 3D v2.2.0 (멀티 섹터 모험 & 사이클 레벨업) 서버에 접속하셨습니다.");
+        this.addLog("스토리", "[데포로쥬] 왕자님, 말하는 섬에서 정비 후 우측 출정 포탈로 진격하십시오!");
+        this.addLog("안내", "각 구역 마물을 모두 소탕하면 다음 차원 포탈이 열립니다.");
 
         this.bindEvents();
     }
@@ -124,90 +184,164 @@ class LineageEngine {
             { id: 'npc_pandora', name: '판도라 (물약상인)', x: 140, y: 440, radius: 24 }
         ];
 
-        this.spawnMonsters();
+        this.loadSector(0);
     }
 
-    spawnMonsters() {
+    loadSector(sectorId) {
+        this.currentSector = sectorId;
+        const sec = SECTORS[sectorId];
         this.monsters = [];
+        this.drops = [];
 
-        // 난이도별 몬스터 체력 및 공격력 계수
-        let hpMult = 1.0;
-        let dmgMult = 1.0;
-        if (this.difficulty === 'easy') {
-            hpMult = 0.8;
-            dmgMult = 0.6;
-        } else if (this.difficulty === 'hard') {
-            hpMult = 1.35;
-            dmgMult = 1.45;
+        if (sectorId === 0) {
+            this.player.x = 240;
+            this.player.y = 360;
+        } else {
+            this.player.x = 180;
+            this.player.y = 260;
+        }
+        this.player.targetX = this.player.x;
+        this.player.targetY = this.player.y;
+        this.player.targetEntity = null;
+
+        if (this.lineage3D) {
+            this.lineage3D.switchSectorTheme(sec);
         }
 
-        // 오크 4마리 (스폰 위치 지정)
-        for (let i = 0; i < 4; i++) {
-            const sx = 580 + Math.random() * 260;
-            const sy = 140 + Math.random() * 180;
-            this.monsters.push({
-                type: 'orc',
-                name: '가네프 오크',
-                x: sx,
-                y: sy,
-                spawnX: sx,
-                spawnY: sy,
-                radius: 20,
-                hp: Math.round(65 * hpMult),
-                maxHp: Math.round(65 * hpMult),
-                speed: 1.6,
-                damage: 12 * dmgMult,
-                exp: 35,
-                adena: 60 + Math.floor(Math.random() * 40),
-                attackCooldown: 0,
-                flipX: false
-            });
+        if (sectorId === 0) {
+            this.portalActive = true;
+            if (this.lineage3D) {
+                this.lineage3D.setPortalActive(true, 880, 260, `제 ${this.currentCycle}사이클 출정`);
+            }
+            this.addLog("모험", `【${sec.name}】에 도착했습니다. 판도라 상점과 허수아비로 정비하십시오.`);
+            this.addLog("안내", `우측 [제 ${this.currentCycle}사이클 출정 포탈]에 다가가면 모험이 시작됩니다.`);
+        } else {
+            this.portalActive = false;
+            if (this.lineage3D) {
+                this.lineage3D.setPortalActive(false);
+            }
+            this.spawnSectorMonsters(sec);
+            this.totalSectorMonsters = this.monsters.length;
+            this.addLog("모험", `⚔️ 【${sec.name}】 진입! (제 ${this.currentCycle}사이클)`);
+            this.addLog("미션", `구역 내 마물(${this.totalSectorMonsters}마리)을 전멸시켜 다음 포탈을 개방하십시오!`);
         }
 
-        // 늑대인간 3마리 (스폰 위치 지정)
-        for (let i = 0; i < 3; i++) {
-            const sx = 640 + Math.random() * 240;
-            const sy = 340 + Math.random() * 160;
-            this.monsters.push({
-                type: 'lycanthrope',
-                name: '라이칸스로프',
-                x: sx,
-                y: sy,
-                spawnX: sx,
-                spawnY: sy,
-                radius: 22,
-                hp: Math.round(110 * hpMult),
-                maxHp: Math.round(110 * hpMult),
-                speed: 2.2,
-                damage: 18 * dmgMult,
-                exp: 65,
-                adena: 120 + Math.floor(Math.random() * 60),
-                attackCooldown: 0,
-                flipX: false
-            });
-        }
+        this.updateSectorHUD();
+    }
 
-        // 셀로브 2마리 (스폰 위치 지정)
-        for (let i = 0; i < 2; i++) {
-            const sx = 760 + Math.random() * 160;
-            const sy = 240 + Math.random() * 200;
-            this.monsters.push({
-                type: 'selolb',
-                name: '셀로브',
-                x: sx,
-                y: sy,
-                spawnX: sx,
-                spawnY: sy,
-                radius: 24,
-                hp: Math.round(180 * hpMult),
-                maxHp: Math.round(180 * hpMult),
-                speed: 2.6,
-                damage: 26 * dmgMult,
-                exp: 140,
-                adena: 250 + Math.floor(Math.random() * 100),
-                attackCooldown: 0,
-                flipX: false
-            });
+    spawnSectorMonsters(sec) {
+        const cycle = this.currentCycle;
+        let diffHp = 1.0, diffDmg = 1.0;
+        if (this.difficulty === 'easy') { diffHp = 0.8; diffDmg = 0.6; }
+        else if (this.difficulty === 'hard') { diffHp = 1.35; diffDmg = 1.45; }
+
+        const cycleHpMult = 1 + (cycle - 1) * 0.40;
+        const cycleDmgMult = 1 + (cycle - 1) * 0.28;
+        const cycleExpMult = 1 + (cycle - 1) * 0.45;
+        const cycleAdenaMult = 1 + (cycle - 1) * 0.55;
+
+        sec.spawns.forEach(spawn => {
+            for (let i = 0; i < spawn.count; i++) {
+                let mLevel = (sec.id * 2) + ((cycle - 1) * 3);
+                if (spawn.type === 'boss_deathknight') mLevel += 4;
+                mLevel = Math.max(1, mLevel);
+
+                const sx = 460 + Math.random() * 420;
+                const sy = 120 + Math.random() * 280;
+
+                const finalHp = Math.round(spawn.baseHp * cycleHpMult * diffHp);
+                const finalDmg = Math.round(spawn.baseDmg * cycleDmgMult * diffDmg);
+
+                this.monsters.push({
+                    type: spawn.type,
+                    name: `[Lv.${mLevel}] ${spawn.name}`,
+                    x: sx,
+                    y: sy,
+                    spawnX: sx,
+                    spawnY: sy,
+                    radius: spawn.radius,
+                    hp: finalHp,
+                    maxHp: finalHp,
+                    speed: spawn.speed,
+                    damage: finalDmg,
+                    exp: Math.round(spawn.exp * cycleExpMult),
+                    adena: Math.round(spawn.adena * cycleAdenaMult + Math.random() * 20),
+                    attackCooldown: 0,
+                    flipX: false
+                });
+            }
+        });
+    }
+
+    updateSectorHUD() {
+        const cycleEl = document.getElementById('hud-cycle-text');
+        const sectorEl = document.getElementById('hud-sector-text');
+        const monsterEl = document.getElementById('hud-monsters-text');
+
+        if (cycleEl) cycleEl.textContent = `제 ${this.currentCycle}사이클`;
+        const sec = SECTORS[this.currentSector];
+        if (sectorEl && sec) sectorEl.textContent = sec.name;
+
+        if (monsterEl) {
+            if (this.currentSector === 0) {
+                monsterEl.textContent = `안전지대 (우측 포탈로 출정)`;
+            } else {
+                const remain = this.monsters.length;
+                if (remain > 0) {
+                    monsterEl.textContent = `남은 마물: ${remain} / ${this.totalSectorMonsters}`;
+                } else {
+                    monsterEl.textContent = `구역 클리어! 포탈 개방`;
+                }
+            }
+        }
+    }
+
+    onSectorClear() {
+        window.lineageAudio.playLevelUp();
+        this.portalActive = true;
+
+        if (this.currentSector === 3) {
+            const bonusAdena = 5000 * this.currentCycle;
+            this.player.adena += bonusAdena;
+            const scroll = this.getItem('enchant_weapon');
+            if (scroll) scroll.count += 3;
+
+            this.addLog("모험", `★★ 축하합니다! [제 ${this.currentCycle}사이클] 모험을 완벽하게 제패했습니다! ★★`);
+            this.addLog("보상", `사이클 정복 보상: +${bonusAdena.toLocaleString()} 아데나, 데이 주문서 3장 지급!`);
+            this.spawnDamageEffect(this.player.x, this.player.y - 20, "CYCLE CLEAR!!", "#fde047");
+
+            if (this.lineage3D) {
+                this.lineage3D.setPortalActive(true, 880, 260, "마을 귀환");
+            }
+        } else {
+            const nextSec = SECTORS[this.currentSector + 1];
+            this.addLog("모험", `★ 구역 클리어! [${nextSec.name}] 차원 포탈이 개방되었습니다! ★`);
+            this.spawnDamageEffect(this.player.x, this.player.y - 20, "SECTOR CLEAR!", "#38bdf8");
+
+            if (this.lineage3D) {
+                this.lineage3D.setPortalActive(true, 880, 260, `${nextSec.name}`);
+            }
+        }
+        this.updateSectorHUD();
+    }
+
+    attemptUsePortal() {
+        if (!this.portalActive) return;
+
+        window.lineageAudio.playTeleport();
+        this.spawnClickRipple(this.player.x, this.player.y);
+
+        if (this.currentSector === 0) {
+            this.loadSector(1);
+        } else if (this.currentSector < 3) {
+            this.loadSector(this.currentSector + 1);
+        } else {
+            this.currentCycle++;
+            this.player.hp = this.player.maxHp;
+            this.player.mp = this.player.maxMp;
+            this.addLog("시스템", `★★ 안전지대로 무사 귀환! HP/MP가 100% 회복되었습니다. ★★`);
+            this.addLog("모험", `다음 출정 시에는 레벨이 오른 [제 ${this.currentCycle}사이클] 몬스터들이 출현합니다!`);
+            this.loadSector(0);
         }
     }
 
@@ -512,12 +646,20 @@ class LineageEngine {
             }
         }
 
-        const inSafetyZone = p.x < 420;
-        const regenRate = inSafetyZone ? (this.difficulty === 'easy' ? 12 : 8) : 4;
+        const inSafetyZone = (this.currentSector === 0) || (p.x < 360);
+        const regenRate = inSafetyZone ? (this.difficulty === 'easy' ? 14 : 10) : 4;
         if (p.hp < p.maxHp) p.hp = Math.min(p.maxHp, p.hp + regenRate * dt);
         if (p.mp < p.maxMp) p.mp = Math.min(p.maxMp, p.mp + (regenRate * 0.8) * dt);
 
         if (p.attackCooldown > 0) p.attackCooldown -= dt;
+
+        // 차원 이동 포탈 도달 체크
+        if (this.portalActive) {
+            const pDist = Math.hypot(p.x - 880, p.y - 260);
+            if (pDist < 48) {
+                this.attemptUsePortal();
+            }
+        }
 
         let targetX = p.targetX;
         let targetY = p.targetY;
@@ -683,7 +825,7 @@ class LineageEngine {
 
         p.targetEntity = null;
         const earnedExp = this.difficulty === 'easy' ? Math.round(m.exp * 1.3) : m.exp;
-        this.addLog("전투", `※ ${m.name}을(를) 처치하여 경험치(${earnedExp})와 아데나를 획득했습니다.`);
+        this.addLog("전투", `※ ${m.name} 처치! (EXP +${earnedExp}, 아데나 +${m.adena})`);
 
         this.drops.push({
             x: m.x,
@@ -692,40 +834,23 @@ class LineageEngine {
             exp: earnedExp
         });
 
-        if (Math.random() < 0.25) {
+        if (Math.random() < 0.28) {
             const isWeaponScroll = Math.random() < 0.5;
             const scrollId = isWeaponScroll ? 'enchant_weapon' : 'polymorph';
             const item = this.getItem(scrollId);
             if (item) {
                 item.count++;
-                this.addLog("전투", `★ 대박 드랍! 몬스터가 [${item.name}]을(를) 떨어뜨렸습니다! ★`);
+                this.addLog("전투", `★ 대박 드랍! [${item.name}]을(를) 획득했습니다! ★`);
                 window.lineageAudio.playEnchantSuccess();
             }
         }
 
-        setTimeout(() => {
-            if (this.isRunning) {
-                const rx = 600 + Math.random() * 260;
-                const ry = 160 + Math.random() * 260;
-                this.monsters.push({
-                    type: m.type,
-                    name: m.name,
-                    x: rx,
-                    y: ry,
-                    spawnX: rx,
-                    spawnY: ry,
-                    radius: m.radius,
-                    hp: m.maxHp,
-                    maxHp: m.maxHp,
-                    speed: m.speed,
-                    damage: m.damage,
-                    exp: m.exp,
-                    adena: m.adena,
-                    attackCooldown: 0,
-                    flipX: false
-                });
-            }
-        }, 3500);
+        this.updateSectorHUD();
+
+        // 섹터 내 모든 최초 마물 처치 시 포탈 개방!
+        if (this.monsters.length === 0 && this.currentSector > 0) {
+            this.onSectorClear();
+        }
     }
 
     levelUp() {
@@ -745,14 +870,10 @@ class LineageEngine {
     }
 
     triggerPlayerDeath() {
-        this.addLog("시스템", "사망하셨습니다. 마을 안전지대에서 부활합니다.");
+        this.addLog("시스템", "사망하셨습니다. 마을 베이스캠프로 귀환하여 부활합니다.");
         const p = this.player;
         p.hp = p.maxHp;
-        p.x = 240;
-        p.y = 360;
-        p.targetX = 240;
-        p.targetY = 360;
-        p.targetEntity = null;
+        this.loadSector(0);
         window.lineageAudio.playTeleport();
     }
 
