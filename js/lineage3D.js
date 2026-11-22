@@ -64,12 +64,16 @@ class Lineage3D {
         this.scene.background = new THREE.Color(0x11161d);
         this.scene.fog = new THREE.FogExp2(0x11161d, 0.012);
 
-        // 2. Camera (리니지 정통 쿼터뷰)
+        // 2. Camera (리니지 정통 쿼터뷰 & 모바일 최적화 클로즈업 줌)
         const aspect = width / height;
         this.camera = new THREE.PerspectiveCamera(40, aspect, 0.1, 500);
         this.viewMode = 'quarter'; // 'quarter' | 'closeup'
-        this.targetPitch = 50 * (Math.PI / 180);
-        this.targetDistance = 46;
+        this.targetPitch = 48 * (Math.PI / 180);
+        this.defaultQuarterDistance = 26; // 기존 46 -> 26으로 기본 줌 대폭 확대 (캐릭터 시인성 1.7배 향상)
+        this.defaultCloseupDistance = 16;  // 기존 24 -> 16으로 클로즈업 줌 강화
+        this.minDistance = 12;            // 최대 줌인 한계
+        this.maxDistance = 55;            // 최대 줌아웃 한계
+        this.targetDistance = this.defaultQuarterDistance;
         this.cameraPitch = this.targetPitch;
         this.cameraDistance = this.targetDistance;
         this.updateCameraPosition(240, 360);
@@ -136,16 +140,36 @@ class Lineage3D {
         this.renderer.setSize(width, height);
     }
 
+    // 줌 인 (화면 확대)
+    zoomIn(step = 3) {
+        this.targetDistance = Math.max(this.minDistance, this.targetDistance - step);
+        const percent = Math.round((this.defaultQuarterDistance / this.targetDistance) * 100);
+        this.engine.addLog("시점", `화면 확대 [줌 ${percent}%]`);
+    }
+
+    // 줌 아웃 (화면 축소)
+    zoomOut(step = 3) {
+        this.targetDistance = Math.min(this.maxDistance, this.targetDistance + step);
+        const percent = Math.round((this.defaultQuarterDistance / this.targetDistance) * 100);
+        this.engine.addLog("시점", `화면 축소 [줌 ${percent}%]`);
+    }
+
+    // 줌 리셋 (기본 거리 복원)
+    resetZoom() {
+        this.targetDistance = this.viewMode === 'closeup' ? this.defaultCloseupDistance : this.defaultQuarterDistance;
+        this.engine.addLog("시점", "카메라 줌이 기본 크기로 복원되었습니다.");
+    }
+
     toggleViewMode() {
         if (this.viewMode === 'quarter') {
             this.viewMode = 'closeup';
-            this.targetPitch = 32 * (Math.PI / 180);
-            this.targetDistance = 24;
+            this.targetPitch = 30 * (Math.PI / 180);
+            this.targetDistance = this.defaultCloseupDistance;
             return '클로즈업 뷰';
         } else {
             this.viewMode = 'quarter';
-            this.targetPitch = 50 * (Math.PI / 180);
-            this.targetDistance = 46;
+            this.targetPitch = 48 * (Math.PI / 180);
+            this.targetDistance = this.defaultQuarterDistance;
             return '쿼터뷰';
         }
     }
@@ -161,7 +185,7 @@ class Lineage3D {
         const camBack = Math.cos(this.cameraPitch) * this.cameraDistance;
 
         this.camera.position.set(x3D, camHeight, z3D + camBack);
-        this.camera.lookAt(x3D, 1.2, z3D - 2.5);
+        this.camera.lookAt(x3D, 1.4, z3D - 1.6);
     }
 
     createProceduralCanvas(w, h, drawFn) {
@@ -1525,6 +1549,8 @@ class Lineage3D {
         };
 
         const canvasEl = this.renderer.domElement;
+
+        // 1. 마우스 조작
         canvasEl.addEventListener('mousedown', (e) => {
             if (e.button === 0) triggerActionFromEvent(e.clientX, e.clientY);
             else if (e.button === 2) {
@@ -1533,10 +1559,51 @@ class Lineage3D {
             }
         });
 
-        canvasEl.addEventListener('touchstart', (e) => {
+        // 2. PC 마우스 휠 줌 (확대 / 축소)
+        canvasEl.addEventListener('wheel', (e) => {
             e.preventDefault();
-            if (e.touches && e.touches.length > 0) triggerActionFromEvent(e.touches[0].clientX, e.touches[0].clientY);
+            if (e.deltaY < 0) this.zoomIn(2.5);
+            else this.zoomOut(2.5);
         }, { passive: false });
+
+        // 3. 모바일 터치 및 핀치 투 줌 (Pinch-to-zoom)
+        let initialPinchDist = null;
+        let startZoomDistance = null;
+
+        canvasEl.addEventListener('touchstart', (e) => {
+            if (e.touches && e.touches.length === 2) {
+                e.preventDefault();
+                const t1 = e.touches[0];
+                const t2 = e.touches[1];
+                initialPinchDist = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+                startZoomDistance = this.targetDistance;
+            } else if (e.touches && e.touches.length === 1) {
+                initialPinchDist = null;
+                e.preventDefault();
+                triggerActionFromEvent(e.touches[0].clientX, e.touches[0].clientY);
+            }
+        }, { passive: false });
+
+        canvasEl.addEventListener('touchmove', (e) => {
+            if (e.touches && e.touches.length === 2 && initialPinchDist && startZoomDistance) {
+                e.preventDefault();
+                const t1 = e.touches[0];
+                const t2 = e.touches[1];
+                const currentDist = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+                if (currentDist > 10) {
+                    const ratio = currentDist / initialPinchDist;
+                    const newDist = startZoomDistance / ratio;
+                    this.targetDistance = Math.max(this.minDistance, Math.min(this.maxDistance, newDist));
+                }
+            }
+        }, { passive: false });
+
+        canvasEl.addEventListener('touchend', (e) => {
+            if (e.touches.length < 2) {
+                initialPinchDist = null;
+                startZoomDistance = null;
+            }
+        });
 
         canvasEl.addEventListener('contextmenu', (e) => e.preventDefault());
     }

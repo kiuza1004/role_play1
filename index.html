@@ -5,16 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
-    <title>Lineage Classic 3D Mobile v2.3.0 - 클래식 정밀 3D 기사 & 멀티 섹터 모험</title>
-    <link rel="stylesheet" href="css/style.css?v=2.3.0">
+    <title>Lineage Classic 3D Mobile v2.4.0 - 화면 줌 컨트롤 & 시야 확장 최적화</title>
+    <link rel="stylesheet" href="css/style.css?v=2.4.0">
 </head>
 <body>
 
     <!-- 상단 글로벌 바 (버전 표기 & 메뉴) -->
     <header id="lineage-header">
         <div class="logo-text">
-            <span>⚔ LINEAGE CLASSIC 3D</span>
-            <span class="version-badge" id="version-display" onclick="openGuideModal()">v2.3.0 3D</span>
+            <span>⚔ LINEAGE 3D</span>
+            <span class="version-badge" id="version-display" onclick="openGuideModal()">v2.4.0 3D</span>
         </div>
         <div class="header-btns">
             <button class="btn-header" id="btn-camera-view" onclick="toggle3DView()">🎥 3D 뷰</button>
@@ -30,16 +30,24 @@
     <main id="game-container">
         <!-- 리니지 3D 뷰포트 (Three.js 3D 캔버스 & 모바일 터치) -->
         <div id="game-viewport">
-            <!-- 모험 구역 및 사이클 상태 인디케이터 바 -->
+            <!-- 모험 구역 및 사이클 상태 인디케이터 바 (가림 방지 초슬림 미니멀 칩) -->
             <div id="sector-bar">
                 <div class="sector-info-left">
                     <span class="badge-cycle" id="hud-cycle-text">제 1사이클</span>
-                    <span class="sector-title" id="hud-sector-text">말하는 섬 베이스캠프 (마을)</span>
+                    <span class="sector-title" id="hud-sector-text">말하는 섬 (마을)</span>
                 </div>
                 <div class="sector-info-right">
-                    <span class="badge-monsters" id="hud-monsters-text">안전지대 (우측 포탈로 출정)</span>
+                    <span class="badge-monsters" id="hud-monsters-text">안전지대</span>
                 </div>
             </div>
+
+            <!-- 화면 확대/축소 플로팅 컨트롤러 -->
+            <div id="zoom-controls">
+                <button class="btn-zoom" onclick="zoomGame(true)" title="화면 확대 (줌인)">➕</button>
+                <button class="btn-zoom" onclick="zoomGame(false)" title="화면 축소 (줌아웃)">➖</button>
+                <button class="btn-zoom" onclick="resetGameZoom()" title="기본 크기 복원">⟲</button>
+            </div>
+
             <canvas id="lineageCanvas" width="1024" height="520" style="display:none;"></canvas>
         </div>
 
@@ -319,16 +327,16 @@
     </main>
 
     <!-- 스크립트 모듈 로드 -->
-    <script src="js/three.min.js?v=2.3.0"></script>
+    <script src="js/three.min.js?v=2.4.0"></script>
     <script>
         if (typeof THREE === 'undefined') {
             document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"><\/script>');
         }
     </script>
-    <script src="js/audio.js?v=2.3.0"></script>
-    <script src="js/lineageSprites.js?v=2.3.0"></script>
-    <script src="js/lineage3D.js?v=2.3.0"></script>
-    <script src="js/lineage.js?v=2.3.0"></script>
+    <script src="js/audio.js?v=2.4.0"></script>
+    <script src="js/lineageSprites.js?v=2.4.0"></script>
+    <script src="js/lineage3D.js?v=2.4.0"></script>
+    <script src="js/lineage.js?v=2.4.0"></script>
     <script>
         function openSettingsModal() {
             document.getElementById('settings-modal').style.display = 'flex';
@@ -341,6 +349,19 @@
         }
         function closeGuideModal() {
             document.getElementById('guide-modal').style.display = 'none';
+        }
+
+        // 화면 줌 인/아웃 컨트롤
+        function zoomGame(isZoomIn) {
+            if (window.lineageEngine && window.lineageEngine.lineage3D) {
+                if (isZoomIn) window.lineageEngine.lineage3D.zoomIn();
+                else window.lineageEngine.lineage3D.zoomOut();
+            }
+        }
+        function resetGameZoom() {
+            if (window.lineageEngine && window.lineageEngine.lineage3D) {
+                window.lineageEngine.lineage3D.resetZoom();
+            }
         }
 
         function toggle3DView() {
