@@ -54,8 +54,10 @@ class Lineage3D {
     }
 
     initThree() {
-        const width = this.container.clientWidth || 1024;
-        const height = this.container.clientHeight || 520;
+        let width = this.container.clientWidth;
+        let height = this.container.clientHeight;
+        if (!width || width < 100) width = 1024;
+        if (!height || height < 100) height = Math.round(width * (520 / 1024));
 
         // 1. Scene
         this.scene = new THREE.Scene();
@@ -75,13 +77,16 @@ class Lineage3D {
         // 3. WebGL Renderer
         this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
         this.renderer.setSize(width, height);
-        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
         this.renderer.shadowMap.enabled = true;
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
         this.renderer.toneMappingExposure = 1.1;
 
         this.renderer.domElement.id = 'lineage3DCanvas';
+        this.renderer.domElement.style.position = 'absolute';
+        this.renderer.domElement.style.top = '0';
+        this.renderer.domElement.style.left = '0';
         this.renderer.domElement.style.width = '100%';
         this.renderer.domElement.style.height = '100%';
         this.renderer.domElement.style.display = 'block';
@@ -896,7 +901,11 @@ class Lineage3D {
         const ctx = cvs.getContext('2d');
 
         ctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
-        ctx.roundRect(10, 10, 236, 60, 8);
+        if (typeof ctx.roundRect === 'function') {
+            ctx.roundRect(10, 10, 236, 60, 8);
+        } else {
+            ctx.rect(10, 10, 236, 60);
+        }
         ctx.fill();
 
         ctx.textAlign = 'center';

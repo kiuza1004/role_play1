@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
-    <title>Lineage Classic 3D Mobile v2.2.0 - 멀티 섹터 모험 & 사이클 레벨업</title>
+    <title>Lineage Classic 3D Mobile v2.2.1 - 멀티 섹터 모험 & 사이클 레벨업</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -14,7 +14,7 @@
     <header id="lineage-header">
         <div class="logo-text">
             <span>⚔ LINEAGE CLASSIC 3D</span>
-            <span class="version-badge" id="version-display" onclick="openGuideModal()">v2.2.0 3D</span>
+            <span class="version-badge" id="version-display" onclick="openGuideModal()">v2.2.1 3D</span>
         </div>
         <div class="header-btns">
             <button class="btn-header" id="btn-camera-view" onclick="toggle3DView()">🎥 3D 뷰</button>
@@ -320,6 +320,11 @@
 
     <!-- 스크립트 모듈 로드 -->
     <script src="js/three.min.js"></script>
+    <script>
+        if (typeof THREE === 'undefined') {
+            document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"><\/script>');
+        }
+    </script>
     <script src="js/audio.js"></script>
     <script src="js/lineageSprites.js"></script>
     <script src="js/lineage3D.js"></script>
@@ -397,10 +402,14 @@
         }
 
         window.addEventListener('DOMContentLoaded', () => {
-            const canvas = document.getElementById('lineageCanvas');
-            const viewport = document.getElementById('game-viewport');
-            window.lineageEngine = new LineageEngine(canvas, viewport);
-            window.lineageEngine.start();
+            try {
+                const canvas = document.getElementById('lineageCanvas');
+                const viewport = document.getElementById('game-viewport');
+                window.lineageEngine = new LineageEngine(canvas, viewport);
+                window.lineageEngine.start();
+            } catch (err) {
+                console.error("LineageEngine 구동 오류:", err);
+            }
 
             document.querySelectorAll('.slot-item').forEach(slot => {
                 const itemId = slot.getAttribute('data-item');

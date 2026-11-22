@@ -69,10 +69,19 @@ class LineageEngine {
         this.speedMultiplier = 1.0; // 1.0, 1.5, 2.0
         this.difficulty = 'normal';   // 'easy', 'normal', 'hard'
 
-        // 3D 렌더러 초기화
-        if (window.Lineage3D && this.container) {
-            if (this.canvas) this.canvas.style.display = 'none';
-            this.lineage3D = new Lineage3D(this.container, this);
+        // 3D 렌더러 초기화 (WebGL 지원 여부 검사 및 예외 안전 처리)
+        this.lineage3D = null;
+        if (window.Lineage3D && window.THREE && this.container) {
+            try {
+                this.lineage3D = new Lineage3D(this.container, this);
+                if (this.canvas) this.canvas.style.display = 'none';
+            } catch (err) {
+                console.warn("[LineageEngine] 3D 초기화 실패, 2D 엔진으로 안전 전환합니다:", err);
+                this.lineage3D = null;
+                if (this.canvas) this.canvas.style.display = 'block';
+            }
+        } else {
+            if (this.canvas) this.canvas.style.display = 'block';
         }
 
         this.init();
@@ -1011,33 +1020,80 @@ class LineageEngine {
         if (!ctx) return;
         ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-        // 마을 잔디 타일
-        ctx.fillStyle = '#2d4229';
-        ctx.fillRect(0, 0, 420, this.canvas.height);
+        const currentSec = (this.sectors && this.sectors[this.currentSector]) ? this.sectors[this.currentSector] : { name: '알 수 없음' };
 
-        // 마을 자갈길
-        ctx.fillStyle = '#473c2b';
-        ctx.fillRect(100, 320, 240, 70);
-        ctx.fillRect(200, 160, 60, 260);
+        if (this.currentSector === 0) {
+            // 마을 잔디 타일
+            ctx.fillStyle = '#2d4229';
+            ctx.fillRect(0, 0, 420, this.canvas.height);
 
-        // 필드 사냥터
-        ctx.fillStyle = '#3a3224';
-        ctx.fillRect(420, 0, this.canvas.width - 420, this.canvas.height);
+            // 마을 자갈길
+            ctx.fillStyle = '#473c2b';
+            ctx.fillRect(100, 320, 240, 70);
+            ctx.fillRect(200, 160, 60, 260);
 
-        // 울타리 경계
-        ctx.strokeStyle = '#78350f';
-        ctx.lineWidth = 4;
-        ctx.beginPath();
-        ctx.moveTo(420, 0);
-        ctx.lineTo(420, this.canvas.height);
-        ctx.stroke();
+            // 필드 사냥터
+            ctx.fillStyle = '#3a3224';
+            ctx.fillRect(420, 0, this.canvas.width - 420, this.canvas.height);
 
-        ctx.fillStyle = '#4ade80';
-        ctx.font = 'bold 12px sans-serif';
-        ctx.fillText("【안전지대 (Safety Zone)】 말하는 섬 마을", 20, 30);
+            // 울타리 경계
+            ctx.strokeStyle = '#78350f';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(420, 0);
+            ctx.lineTo(420, this.canvas.height);
+            ctx.stroke();
 
-        ctx.fillStyle = '#f87171';
-        ctx.fillText("【전투구역 (Combat Zone)】 글루딘 야생 사냥터", 440, 30);
+            ctx.fillStyle = '#4ade80';
+            ctx.font = 'bold 12px sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText("【안전지대 (Safety Zone)】 말하는 섬 마을", 20, 30);
+
+            ctx.fillStyle = '#f87171';
+            ctx.fillText("【전투구역 (Combat Zone)】 훈련소", 440, 30);
+        } else if (this.currentSector === 1) {
+            // 글루딘 숲
+            ctx.fillStyle = '#162e16';
+            ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            ctx.fillStyle = '#22c55e';
+            ctx.font = 'bold 13px sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText(`【${currentSec.name}】 야생의 수풀림 (전원 처치 시 포탈 개방)`, 20, 30);
+        } else if (this.currentSector === 2) {
+            // 비명의 개미굴
+            ctx.fillStyle = '#1c101e';
+            ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            ctx.fillStyle = '#c084fc';
+            ctx.font = 'bold 13px sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText(`【${currentSec.name}】 어두운 지하 동굴 (전원 처치 시 포탈 개방)`, 20, 30);
+        } else if (this.currentSector === 3) {
+            // 성채 폐허
+            ctx.fillStyle = '#181216';
+            ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            ctx.fillStyle = '#f87171';
+            ctx.font = 'bold 13px sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText(`【${currentSec.name}】 보스 데스나이트의 안식처`, 20, 30);
+        }
+
+        // 2D 차원 포탈 드로잉
+        if (this.portal && this.portal.active) {
+            ctx.save();
+            ctx.fillStyle = 'rgba(56, 189, 248, 0.25)';
+            ctx.beginPath();
+            ctx.arc(this.portal.x, this.portal.y, this.portal.radius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#38bdf8';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            ctx.fillStyle = '#fde047';
+            ctx.font = 'bold 12px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(this.portal.label || "차원 이동 포탈", this.portal.x, this.portal.y - 32);
+            ctx.restore();
+        }
 
         // 허수아비
         for (const dum of this.dummies) {
@@ -1070,7 +1126,11 @@ class LineageEngine {
 
         // 몬스터
         for (const m of this.monsters) {
-            const spriteKey = m.type === 'orc' ? 'orc' : (m.type === 'lycanthrope' ? 'lycanthrope' : 'selolb');
+            let spriteKey = 'orc';
+            if (m.type === 'skeleton') spriteKey = 'knight_walk';
+            else if (m.type === 'deathknight') spriteKey = 'deathknight_walk';
+            else if (m.type === 'lycanthrope') spriteKey = 'lycanthrope';
+            else if (m.type === 'selolb') spriteKey = 'selolb';
             window.lineageSprites.draw(ctx, spriteKey, m.x, m.y, m.flipX);
 
             ctx.fillStyle = '#fca5a5';

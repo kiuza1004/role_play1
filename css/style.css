@@ -94,9 +94,9 @@ body {
 
 #game-viewport {
     width: 100%;
-    height: auto;
-    aspect-ratio: 1024 / 520;
     position: relative;
+    padding-bottom: 50.78125%; /* 520 / 1024 = 50.78125% 비율 완벽 유지 (구형 브라우저 및 모바일 호환 패딩 핵) */
+    height: 0;
     overflow: hidden;
     background: #11161d;
     cursor: crosshair;
@@ -158,6 +158,9 @@ body {
 }
 
 #lineage3DCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100% !important;
     height: 100% !important;
     display: block;
@@ -165,9 +168,11 @@ body {
 }
 
 canvas#lineageCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
-    height: auto;
-    aspect-ratio: 1024 / 520;
+    height: 100%;
     display: block;
     background: #1b2619;
     cursor: crosshair;
